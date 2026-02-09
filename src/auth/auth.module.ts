@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import type { StringValue } from 'ms';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -30,12 +31,12 @@ import { JwtStrategy } from './strategies';
       inject: [ ConfigService ],
       useFactory: ( configService: ConfigService ) => {
         return {
-          secret: configService.get('JWT_SECRET'),
+          secret: configService.getOrThrow<string>('jwtSecret'),
           signOptions: {
-            expiresIn:'2h'
-          }
-        }
-      }
+            expiresIn: configService.getOrThrow<StringValue>('jwtExpireTime'),
+          },
+        };
+      },
     })
   ],
   exports: [JwtStrategy, PassportModule, JwtModule]
