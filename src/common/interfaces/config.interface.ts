@@ -6,4 +6,5 @@ export interface EnvInterface {
   mongodbUri: string;
   port: number;
   defaultPageSize: number;
+  jwtSecret: string;
 }
