@@ -15,3 +15,5 @@ export const DEFAULT_MONGO_URI = 'mongodb://localhost:27017/mi-dashboard';
 export const DEFAULT_EXCEPTION_MESSAGE = 'Internal server error, please contact support.';
 
 export const JWT_SECRET_KEY = "*bSe_Pr0Jec+/"; //Example
+
+export const JWT_EXPIRE_TIME = "2h"; //Example

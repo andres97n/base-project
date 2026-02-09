@@ -7,4 +7,5 @@ export interface EnvInterface {
   port: number;
   defaultPageSize: number;
   jwtSecret: string;
+  jwtExpireTime: string;
 }
