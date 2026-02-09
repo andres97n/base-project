@@ -2,15 +2,20 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 import { BaseSchema } from "src/common/entities";
 import { UserRoles } from "../enums";
-import { USER_EMAIL_ERROR_VALIDATION, USER_FULLNAME_ERROR_LENGTH, USER_PASSWORD_ERROR_LENGTH, USER_PASSWORD_ERROR_VALIDATION } from "../constants";
+import { 
+  USER_EMAIL_ERROR_REQUIRED, USER_EMAIL_ERROR_VALIDATION, 
+  USER_FULLNAME_ERROR_LENGTH, USER_PASSWORD_ERROR_LENGTH, 
+  USER_PASSWORD_ERROR_REQUIRED, USER_PASSWORD_ERROR_VALIDATION 
+} from "../constants";
 import { isEmail, isPasswordValid } from "src/common/utils";
+import { compareUserPassword, validateAndHashPassword } from "../helpers";
 
 
 @Schema({})
 export class User extends BaseSchema{
   @Prop({
     type: String,
-    required: [true, 'Email is required'],
+    required: [true, USER_EMAIL_ERROR_REQUIRED],
     unique: true,
     lowercase: true,
     trim: true,
@@ -24,7 +29,7 @@ export class User extends BaseSchema{
   
   @Prop({
     type: String,
-    required: [true, 'Password is required'],
+    required: [true, USER_PASSWORD_ERROR_REQUIRED],
     minlength: [8, USER_PASSWORD_ERROR_LENGTH],
     validate: {
       validator: isPasswordValid,
@@ -61,20 +66,18 @@ export class User extends BaseSchema{
 
 const UserSchema = SchemaFactory.createForClass(User);
 
-// UserSchema.pre('save', async function(next) {
-//   if (!this.isModified('password')) return next();
-  
-//   try {
-//     const salt = await bcrypt.genSalt(10);
-//     this.password = await bcrypt.hash(this.password, salt);
-//     next();
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+UserSchema.pre('save', async function(next: (err?: Error) => void) {
+  await validateAndHashPassword(
+    this.password, 
+    next,
+    this.isModified('password')
+  );
+});
 
-// UserSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
-//   return bcrypt.compare(candidatePassword, this.password);
-// };
+UserSchema.methods.comparePassword = async function(
+  candidatePassword: string
+): Promise<boolean> {
+  return compareUserPassword(candidatePassword, this.password);
+};
 
 export { UserSchema };
