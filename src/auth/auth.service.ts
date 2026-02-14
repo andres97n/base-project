@@ -1,26 +1,65 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { 
+  BadRequestException, Injectable, 
+  InternalServerErrorException, UnauthorizedException 
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+
+import { CreateUserDto, LoginUserDto } from './dto';
+import { User } from './entities';
+import { JwtHelper } from './helpers';
+import { comparePasswordWithHashed } from 'src/common/utils';
+
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+
+  constructor(
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
+
+    private readonly jwtHelper: JwtHelper,
+  ) { }
+
+  async create(createUserDto: CreateUserDto) {
+    try {
+
+      const { id, ...user } = await this.userModel.create(createUserDto);
+
+      // await this.userModel.save(user)
+      // delete user.password;
+
+      return {
+        ...user,
+        token: await this.jwtHelper.generateAccessToken({ id })
+      };
+
+    } catch (error) {
+      if (error?.detail) throw new BadRequestException( error.detail );
+
+      throw new InternalServerErrorException('Please check server logs');
+    }
+
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  async login( loginUserDto: LoginUserDto ) {
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    const { password, email } = loginUserDto;
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+    const user = await this.userModel.findOne({
+      where: { email },
+      select: { email: true, id: true }
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    if ( !user ) 
+      throw new UnauthorizedException('Credentials are not valid (email)');
+      
+    if ( !comparePasswordWithHashed( password, user.password ) )
+      throw new UnauthorizedException('Credentials are not valid (password)');
+
+    return {
+      ...user,
+      token: this.jwtHelper.generateAccessToken({ id: user.id })
+    };
   }
 }

@@ -3,7 +3,8 @@ import { IsEmail, IsString, Matches, MaxLength, MinLength } from 'class-validato
 import { USER_PASSWORD_ERROR_VALIDATION, USER_PASSWORD_PATTERN_REG } from '../constants';
 
 
-export class CreateAuthDto {
+export class LoginUserDto {
+
   @IsString()
   @IsEmail()
   email: string;
@@ -17,7 +18,4 @@ export class CreateAuthDto {
   })
   password: string;
 
-  @IsString()
-  @MinLength(1)
-  fullName: string;
 }

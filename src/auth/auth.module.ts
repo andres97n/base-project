@@ -9,11 +9,12 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { User, UserSchema } from './entities';
 import { JwtStrategy } from './strategies';
+import { JwtHelper } from './helpers';
 
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, JwtHelper],
   imports: [
     ConfigModule,
 
@@ -31,9 +32,10 @@ import { JwtStrategy } from './strategies';
       inject: [ ConfigService ],
       useFactory: ( configService: ConfigService ) => {
         return {
-          secret: configService.getOrThrow<string>('jwtSecret'),
+          secret: configService.get<string>('jwtSecret'),
           signOptions: {
-            expiresIn: configService.getOrThrow<StringValue>('jwtExpireTime'),
+            expiresIn: configService.get<StringValue>('jwtExpireTime'),
+            
           },
         };
       },
