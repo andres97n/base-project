@@ -12,9 +12,9 @@ import { AppException } from '../exceptions';
 import { ErrorResponse } from '../interfaces';
 import { getHttpExceptionCode } from '../helpers';
 import { 
-  DEFAULT_EXCEPTION_MESSAGE, EXCEPTION_DEFAULT_CODE, 
-  EXCEPTION_UNHANDLED_CODE 
+  DEFAULT_EXCEPTION_MESSAGE, 
 } from '../constants';
+import { ExceptionAppCodes } from '../enums';
 
 /**
  * Filtro global que captura TODAS las excepciones no manejadas
@@ -31,7 +31,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = DEFAULT_EXCEPTION_MESSAGE;
-    let code = EXCEPTION_DEFAULT_CODE;
+    let code = ExceptionAppCodes.EXCEPTION_DEFAULT_CODE;
     let details: Record<string, any> | undefined;
     let stack: string | undefined;
 
@@ -39,10 +39,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (exception instanceof AppException) {
       status = exception.getStatus();
       message = exception.message;
-      code = exception.code;
+      code = ExceptionAppCodes[exception.code];
       details = exception.details;
       stack = exception.stack;
-    } else if (exception instanceof HttpException) {
+    } 
+    
+    if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
       
@@ -55,10 +57,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
       
       code = getHttpExceptionCode(status);
       stack = exception.stack;
-    } else if (exception instanceof Error) {
+    } 
+    
+    if (exception instanceof Error) {
       message = exception.message;
       stack = exception.stack;
-      code = EXCEPTION_UNHANDLED_CODE;
+      code = ExceptionAppCodes.EXCEPTION_UNHANDLED_CODE;
     }
 
     // Construir respuesta de error

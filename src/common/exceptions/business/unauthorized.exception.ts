@@ -1,7 +1,8 @@
 import { HttpStatus } from '@nestjs/common';
 
 import { AppException } from '../index';
-import { EXCEPTION_UNAUTHORIZED_CODE, EXCEPTION_UNAUTHORIZED_DEFAULT_MESSAGE } from 'src/common/constants';
+import { EXCEPTION_UNAUTHORIZED_DEFAULT_MESSAGE } from 'src/common/constants';
+import { ExceptionAppCodes } from 'src/common/enums';
 
 
 export class UnauthorizedException extends AppException {
@@ -12,7 +13,7 @@ export class UnauthorizedException extends AppException {
     super(
       message,
       HttpStatus.UNAUTHORIZED,
-      EXCEPTION_UNAUTHORIZED_CODE,
+      ExceptionAppCodes.EXCEPTION_UNHANDLED_CODE,
       details,
       true,
     );

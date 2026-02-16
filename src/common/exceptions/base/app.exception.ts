@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-import { EXCEPTION_DEFAULT_CODE } from 'src/common/constants';
+import { ExceptionAppCodes } from 'src/common/enums';
 
 
 /**
@@ -16,7 +16,7 @@ export class AppException extends HttpException {
   constructor(
     message: string,
     statusCode: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
-    code: string = EXCEPTION_DEFAULT_CODE,
+    code: string = ExceptionAppCodes.EXCEPTION_DEFAULT_CODE,
     details?: Record<string, any>,
     isOperational: boolean = true,
   ) {

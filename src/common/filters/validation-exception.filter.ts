@@ -10,9 +10,10 @@ import { Request, Response } from 'express';
 import { ValidationErrorResponse, ValidationError } from '../interfaces';
 import { formatValidationErrors } from '../helpers';
 import { 
-  DEFAULT_BAD_REQUEST, EXCEPTION_VALIDATION_CODE, 
+  DEFAULT_BAD_REQUEST, 
   EXCEPTION_VALIDATION_DEFAULT_DETAIL_MESSAGE 
 } from '../constants';
+import { ExceptionAppCodes } from '../enums';
 
 /**
  * Filtro especializado para errores de validación de DTOs
@@ -48,7 +49,7 @@ export class ValidationExceptionFilter implements ExceptionFilter {
       statusCode: status,
       message: EXCEPTION_VALIDATION_DEFAULT_DETAIL_MESSAGE,
       error: DEFAULT_BAD_REQUEST,
-      code: EXCEPTION_VALIDATION_CODE,
+      code: ExceptionAppCodes.EXCEPTION_VALIDATION_CODE,
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
