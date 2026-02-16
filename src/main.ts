@@ -34,19 +34,18 @@ async function bootstrap() {
       transform: true,
       transformOptions: {
         enableImplicitConversion: false,
-        excludeExtraneousValues: true,
       },
       
       exceptionFactory: (errors) => {
         logger.warn(EXCEPTION_VALIDATION_DEFAULT_MESSAGE, JSON.stringify(errors));
-        throw new BadRequestException(errors);
+        return new BadRequestException(errors);
       },
     })
   );
   
   app.useGlobalFilters(
+    new AllExceptionsFilter(),     
     new ValidationExceptionFilter(),  
-    new AllExceptionsFilter(),       
   );
 
   app.use((req: any, res: any, next: any) => {
@@ -75,7 +74,7 @@ async function bootstrap() {
     });
     
     await app.listen(port);
-    logger.log(`Application is running on: http://localhost:${port}/${globalPrefix}`, 'Bootstrap');
+    logger.log(`Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
 
 bootstrap();
