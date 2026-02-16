@@ -1,37 +1,66 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
+import { BadRequestException, Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder } from '@nestjs/swagger/dist/document-builder';
-
+import { SwaggerModule } from '@nestjs/swagger';
+import { v4 as uuidv4 } from 'uuid';
 
 import { AppModule } from './app.module';
-import { API_SUB_PATH, DEFAULT_PORT } from './common/constants';
-import { SwaggerModule } from '@nestjs/swagger';
+import { API_SUB_PATH, DEFAULT_PORT, EXCEPTION_VALIDATION_DEFAULT_MESSAGE } from './common/constants';
+import { ValidationExceptionFilter, AllExceptionsFilter } from './common/filters';
+import { LoggingInterceptor, ResponseInterceptor } from './common/interceptors';
 
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
-
+  
   const configService = app.get(ConfigService);
   const port = configService.get<number>('port') || DEFAULT_PORT;
   const globalPrefix = configService.get<string>('apiSubPath') || API_SUB_PATH;
-
+  
   app.setGlobalPrefix(globalPrefix);
-
+  
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
   });
-
+  
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
+      
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: false,
+        excludeExtraneousValues: true,
+      },
+      
+      exceptionFactory: (errors) => {
+        logger.warn(EXCEPTION_VALIDATION_DEFAULT_MESSAGE, JSON.stringify(errors));
+        throw new BadRequestException(errors);
+      },
     })
   );
+  
+  app.useGlobalFilters(
+    new ValidationExceptionFilter(),  
+    new AllExceptionsFilter(),       
+  );
 
-  // app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector)));
-  // app.useGlobalFilters(new AllExceptionsFilter());
+  app.use((req: any, res: any, next: any) => {
+    req.headers['x-request-id'] = req.headers['x-request-id'] || uuidv4();
+    res.setHeader('X-Request-ID', req.headers['x-request-id']);
+    next();
+  });
+
+  const reflector = app.get(Reflector);
+
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new ResponseInterceptor(reflector),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('New Base Project')
@@ -46,7 +75,7 @@ async function bootstrap() {
     });
     
     await app.listen(port);
-    Logger.log(`Application is running on: http://localhost:${port}/${globalPrefix}`, 'Bootstrap');
+    logger.log(`Application is running on: http://localhost:${port}/${globalPrefix}`, 'Bootstrap');
 }
 
 bootstrap();
