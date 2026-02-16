@@ -1,0 +1,26 @@
+
+export const DEFAULT_EXCEPTION_MESSAGE = 'Internal server error, please contact support.';
+
+export const DEFAULT_BAD_REQUEST = "Bad Request";
+
+export const EXCEPTION_VALIDATION_DEFAULT_MESSAGE = "Validation failed";
+
+export const EXCEPTION_VALIDATION_DEFAULT_DETAIL_MESSAGE = "Request with validations issues";
+
+export const EXCEPTION_UNAUTHORIZED_DEFAULT_MESSAGE = "Not Authorized";
+
+export const EXCEPTION_FORBIDDEN_DEFAULT_MESSAGE = "Access Denied";
+
+export const EXCEPTION_DEFAULT_CODE = "INTERNAL_ERROR";
+
+export const EXCEPTION_HTTP_CODE = "HTTP_EXCEPTION";
+
+export const EXCEPTION_UNHANDLED_CODE = "UNHANDLED_ERROR";
+
+export const EXCEPTION_VALIDATION_CODE = "VALIDATION_ERROR";
+
+export const EXCEPTION_RESOURCE_NOT_FOUND_CODE = "RESOURCE_NOT_FOUND";
+
+export const EXCEPTION_UNAUTHORIZED_CODE = "UNAUTHORIZED";
+
+export const EXCEPTION_FORBIDDEN_CODE = "FORBIDDEN";
