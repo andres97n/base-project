@@ -1,7 +1,8 @@
 import { HttpStatus } from '@nestjs/common';
 
 import { AppException } from '../index';
-import { EXCEPTION_FORBIDDEN_CODE, EXCEPTION_FORBIDDEN_DEFAULT_MESSAGE } from 'src/common/constants';
+import { EXCEPTION_FORBIDDEN_DEFAULT_MESSAGE } from 'src/common/constants';
+import { ExceptionAppCodes } from 'src/common/enums';
 
 
 export class ForbiddenException extends AppException {
@@ -12,7 +13,7 @@ export class ForbiddenException extends AppException {
     super(
       message,
       HttpStatus.FORBIDDEN,
-      EXCEPTION_FORBIDDEN_CODE,
+      ExceptionAppCodes.EXCEPTION_FORBIDDEN_CODE,
       details,
       true,
     );

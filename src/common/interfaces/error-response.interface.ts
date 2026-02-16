@@ -1,3 +1,6 @@
+import { ExceptionAppCodes } from "../enums";
+
+
 export interface ErrorResponse {
   ok: boolean;
   statusCode: number;
@@ -20,4 +23,11 @@ export interface ValidationError {
 
 export interface ValidationErrorResponse extends ErrorResponse {
   validationErrors: ValidationError[];
+}
+
+export interface ErrorResponseHelper {
+  status: number;
+  code: ExceptionAppCodes;
+  message: string;
+  details?: Record<string, any>;
 }

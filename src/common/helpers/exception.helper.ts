@@ -1,12 +1,12 @@
-import { EXCEPTION_HTTP_CODE } from "../constants";
-import { HttpExceptionCode } from "../enums";
+import { ExceptionAppCodes, HttpExceptionCode } from "../enums";
 import { ValidationError } from "../interfaces";
 
 
-export const getHttpExceptionCode = (status: number): string => {
-  if (Object.values(HttpExceptionCode).includes(status)) return HttpExceptionCode[status];
+export const getHttpExceptionCode = (status: number): ExceptionAppCodes => {
+  if (Object.values(HttpExceptionCode).includes(status)) 
+    return ExceptionAppCodes[`EXCEPTION_${HttpExceptionCode[status]}`] ?? ExceptionAppCodes.EXCEPTION_HTTP_CODE;
 
-  return EXCEPTION_HTTP_CODE;
+  return ExceptionAppCodes.EXCEPTION_HTTP_CODE;
 }
 
 export const formatValidationErrors = (errors: any[]): ValidationError[] => {

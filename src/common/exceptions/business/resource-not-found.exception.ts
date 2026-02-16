@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 
-import { EXCEPTION_RESOURCE_NOT_FOUND_CODE } from 'src/common/constants';
 import { AppException } from '../index';
+import { ExceptionAppCodes } from 'src/common/enums';
 
 
 export class ResourceNotFoundException extends AppException {
@@ -13,7 +13,7 @@ export class ResourceNotFoundException extends AppException {
     super(
       `${resourceType} with identifier "${identifier}" not found`,
       HttpStatus.NOT_FOUND,
-      EXCEPTION_RESOURCE_NOT_FOUND_CODE,
+      ExceptionAppCodes.EXCEPTION_RESOURCE_NOT_FOUND_CODE,
       { resourceType, identifier, ...details },
       true,
     );

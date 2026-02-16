@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { AppModule } from './app.module';
 import { API_SUB_PATH, DEFAULT_PORT, EXCEPTION_VALIDATION_DEFAULT_MESSAGE } from './common/constants';
-import { ValidationExceptionFilter, AllExceptionsFilter } from './common/filters';
+import { ValidationExceptionFilter, AllExceptionsFilter, MongooseExceptionFilter } from './common/filters';
 import { LoggingInterceptor, ResponseInterceptor } from './common/interceptors';
 
 
@@ -44,7 +44,8 @@ async function bootstrap() {
   );
   
   app.useGlobalFilters(
-    new AllExceptionsFilter(),     
+    new AllExceptionsFilter(),
+    new MongooseExceptionFilter(), //Only for MongoDB
     new ValidationExceptionFilter(),  
   );
 
