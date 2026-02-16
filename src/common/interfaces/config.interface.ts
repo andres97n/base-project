@@ -1,11 +1,14 @@
+import { EviromentTypes } from "../enums";
 
 
 export interface EnvInterface {
-  environment: string;
-  apiSubPath: string;
   mongodbUri: string;
-  port: number;
-  defaultPageSize: number;
   jwtSecret: string;
-  jwtExpireTime: string;
+  jwtRefreshSecret: string;
+  environment?: EviromentTypes;
+  apiSubPath?: string;
+  port?: number;
+  defaultPageSize?: number;
+  jwtTime?: string;
+  jwtRefreshTime?: string;
 }
