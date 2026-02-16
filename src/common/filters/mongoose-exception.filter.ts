@@ -13,7 +13,10 @@ import { MongoError } from 'mongodb';
 import { ErrorResponse } from '../interfaces';
 import { ExceptionAppCodes } from '../enums';
 import { EXCEPTION_DATABASE_DEFAULT_MESSAGE } from '../constants';
-import { extractDuplicateField, getResponseMongoValidationError } from '../helpers';
+import { 
+  getMongoResponseCastError, getMongoResponseDefaultError, 
+  getMongoResponseDuplicateKeyError, getMongoResponseMongoValidationError 
+} from '../helpers';
 
 /**
  * Filtro especializado para errores de Mongoose y MongoDB
@@ -36,31 +39,18 @@ export class MongooseExceptionFilter implements ExceptionFilter {
     let code = ExceptionAppCodes.EXCEPTION_DATABASE_CODE;
     let details: Record<string, any> = {};
 
-    // 1. Error de validación de Mongoose
     if (exception instanceof MongooseError.ValidationError) {
-      ({ status, code, message, details = {} } = getResponseMongoValidationError(exception));
+      ({ status, code, message, details = {} } = getMongoResponseMongoValidationError(exception));
 
       this.logger.warn(
         `Mongoose validation error on ${request.method} ${request.url}`,
         JSON.stringify(details),
       );
     }
-    // 2. Error de clave duplicada (unique constraint)
-    if (exception.name === 'MongoServerError' && exception.code === 11000) {
-      status = HttpStatus.CONFLICT;
-      code = ExceptionAppCodes.EXCEPTION_DUPLICATE_KEY_CODE;
-      
-      const field = extractDuplicateField(exception);
-      const value = exception.keyValue?.[field];
-      
-      message = `El ${field} '${value}' ya existe en el sistema`;
-      
-      details = {
-        field,
-        value,
-        constraint: 'unique',
-      };
 
+    if (exception.name === 'MongoServerError' && exception.code === 11000) {
+      ({ status, code, message, details = {} } = getMongoResponseDuplicateKeyError(exception));
+      
       this.logger.warn(
         `Duplicate key error on ${request.method} ${request.url}`,
         JSON.stringify(details),
@@ -68,16 +58,7 @@ export class MongooseExceptionFilter implements ExceptionFilter {
     }
     
     if (exception instanceof MongooseError.CastError) {
-      status = HttpStatus.BAD_REQUEST;
-      code = ExceptionAppCodes.EXCEPTION_INVALID_DATA_TYPE_CODE;
-      message = `Valor inválido para el campo '${exception.path}'`;
-      
-      details = {
-        field: exception.path,
-        value: exception.value,
-        expectedType: exception.kind,
-        reason: 'El formato del dato no es válido',
-      };
+      ({ status, code, message, details = {} } = getMongoResponseCastError(exception));
 
       this.logger.warn(
         `Cast error on ${request.method} ${request.url}`,
@@ -86,14 +67,7 @@ export class MongooseExceptionFilter implements ExceptionFilter {
     }
     
     if (exception instanceof MongoError) {
-      status = HttpStatus.INTERNAL_SERVER_ERROR;
-      code = ExceptionAppCodes.EXCEPTION_MONGODB_CODE;
-      message = 'Error interno de base de datos';
-      
-      details = {
-        mongoCode: exception.code,
-        mongoMessage: exception.message,
-      };
+      ({ status, code, message, details = {} } = getMongoResponseDefaultError(exception));
 
       this.logger.error(
         `MongoDB error on ${request.method} ${request.url}`,

@@ -1,11 +1,11 @@
 import { HttpStatus } from "@nestjs/common";
 
-import { ExceptionAppCodes } from "../enums";
-import { EXCEPTION_VALIDATION_DEFAULT_DETAIL_MESSAGE } from "../constants";
-import { ErrorResponseHelper } from "../interfaces";
+import { ExceptionAppCodes } from "src/common/enums";
+import { ErrorResponseHelper } from "src/common/interfaces";
+import { EXCEPTION_VALIDATION_DEFAULT_DETAIL_MESSAGE } from "src/common/constants";
 
 
-export const getResponseMongoValidationError = (
+export const getMongoResponseMongoValidationError = (
   exception: any
 ): ErrorResponseHelper => ({
   status: HttpStatus.BAD_REQUEST,
@@ -20,4 +20,4 @@ export const getResponseMongoValidationError = (
       value: exception.errors[field].value,
     })),
   }
-})
+});
