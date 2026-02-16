@@ -1,20 +1,28 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+import type { StringValue } from 'ms';
 
 import { JwtPayload } from "../interfaces";
 
 
 @Injectable()
 export class JwtHelper {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService
+  ) {}
 
   generateAccessToken(payload: JwtPayload): Promise<string> {
     return this.jwtService.signAsync(payload);
   }
 
-  // generateRefreshToken(payload: any) {
-  //   return this.jwtService.signAsync(payload, { expiresIn: '7d' });
-  // }
+  generateRefreshToken(payload: any) {
+    return this.jwtService.signAsync(payload, {
+      secret: this.configService.get<string>('jwtRefreshSecret'),
+      expiresIn: this.configService.get<StringValue>('jwtRefreshTime'),
+    });
+  }
 
   verifyToken(token: string) {
     return this.jwtService.verifyAsync(token);

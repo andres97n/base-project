@@ -22,24 +22,16 @@ export class AuthService {
   ) { }
 
   async create(createUserDto: CreateUserDto) {
-    try {
+    const { id, ...user } = await this.userModel.create(createUserDto);
+    const data = {
+      ...user,
+      token: await this.jwtHelper.generateAccessToken({ id })
+    };
 
-      const { id, ...user } = await this.userModel.create(createUserDto);
-
-      // await this.userModel.save(user)
-      // delete user.password;
-
-      return {
-        ...user,
-        token: await this.jwtHelper.generateAccessToken({ id })
-      };
-
-    } catch (error) {
-      if (error?.detail) throw new BadRequestException( error.detail );
-
-      throw new InternalServerErrorException('Please check server logs');
-    }
-
+    return {
+      data,
+      message: 'User created successfully',
+    };
   }
 
   async login( loginUserDto: LoginUserDto ) {
