@@ -6,17 +6,27 @@ import { ResourceNotFoundException } from '../exceptions';
 import { BaseEntityStates } from '../enums';
 
 
-
 @Injectable()
 export class GenericService<T> {
   constructor(private readonly model: Model<T>) {}
 
-  async findAll() {
-    return await this.model.find().exec();
+  async findAll(select?: string | Record<string, 0 | 1>) {
+    const query = this.model.find();
+    if (select) {
+      query.select(select);
+    }
+    return await query.exec();
   }
 
-  async findById(id: string, message?: string) {
-    const record = await this.model.findById(id).exec();
+  async findById(
+    id: string, 
+    message?: string, 
+    select?: string | Record<string, 0 | 1>
+  ) {
+    const query = this.model.findById(id);
+    if (select) query.select(select);
+    
+    const record = await query.exec();
     if (!record) throw new ResourceNotFoundException(
       message || DEFAULT_NOT_FOUND_MESSAGE,
       id
@@ -25,8 +35,15 @@ export class GenericService<T> {
     return record;
   }
 
-  async findOne(filter: Partial<Record<keyof T, unknown>>, message?: string): Promise<T> {
-    const result = await this.model.findOne(filter).exec();
+  async findOne(
+    filter: Partial<Record<keyof T, unknown>>, 
+    message?: string, 
+    select?: string | Record<string, 0 | 1>
+  ): Promise<T> {
+    const query = this.model.findOne(filter);
+    if (select) query.select(select);
+    
+    const result = await query.exec();
     if (!result) throw new ResourceNotFoundException(
       message || DEFAULT_NOT_FOUND_MESSAGE,
       '-'
@@ -35,8 +52,14 @@ export class GenericService<T> {
     return result;
   }
 
-  async findOneWithoutException(objectSearch: Partial<Record<keyof T, unknown>>) {
-    return await this.model.findOne(objectSearch).exec();
+  async findOneWithoutException(
+    objectSearch: Partial<Record<keyof T, unknown>>, 
+    select?: string | Record<string, 0 | 1>
+  ) {
+    const query = this.model.findOne(objectSearch);
+    if (select) query.select(select);
+    
+    return await query.exec();
   }
 
   async create(createDto: any) {
