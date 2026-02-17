@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UnauthorizedException } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
-import { CreateUserDto, LoginUserDto } from './dto';
+import { CreateUserDto, LoginUserDto, RenewTokenDto } from './dto';
 
 
 @Controller('auth')
@@ -16,6 +16,11 @@ export class AuthController {
   @Post('login')
   loginUser(@Body() loginUserDto: LoginUserDto ) {
     return this.authService.login( loginUserDto );
+  }
+
+  @Post('refresh')
+  async refreshUserToken(@Body() tokenDto: RenewTokenDto) {
+    return this.authService.renewUserToken( tokenDto );
   }
 
   // @Get('check-status')

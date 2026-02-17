@@ -41,7 +41,7 @@ export class User extends BaseSchema{
 
   @Prop({
     type: String,
-    required: false,
+    required: true,
     trim: true,
     minlength: [3, USER_FULLNAME_ERROR_LENGTH],
   })
@@ -57,7 +57,7 @@ export class User extends BaseSchema{
   @Prop({
     type: Array,
     required: true,
-    default: UserRoles.USER, 
+    default: [UserRoles.USER], 
     enum: Object.values(UserRoles),
   })
   roles: string[];
@@ -67,14 +67,14 @@ export class User extends BaseSchema{
     required: false,
     select: false
   })
-  refreshToken: string;
+  refreshToken?: string;
 
   @Prop({
     type: Date,
     required: false,
     select: false
   })
-  refreshTokenExpiresAt: Date;
+  refreshTokenExpiresAt?: Date;
 }
 
 
