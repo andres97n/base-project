@@ -11,7 +11,7 @@ import { Error as MongooseError } from 'mongoose';
 import { MongoError } from 'mongodb';
 
 import { ErrorResponse } from '../interfaces';
-import { ExceptionAppCodes } from '../enums';
+import { EviromentTypes, ExceptionAppCodes } from '../enums';
 import { EXCEPTION_DATABASE_DEFAULT_MESSAGE } from '../constants';
 import { 
   getMongoResponseCastError, getMongoResponseDefaultError, 
@@ -86,7 +86,7 @@ export class MongooseExceptionFilter implements ExceptionFilter {
       method: request.method,
       requestId: request.headers['x-request-id'] as string,
       details,
-      ...(process.env.NODE_ENV === 'development' && { stack: exception.stack }),
+      ...(process.env.NODE_ENV === EviromentTypes.DEVELOPMENT && { stack: exception.stack }),
     };
 
     response.status(status).json(errorResponse);

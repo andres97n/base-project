@@ -14,7 +14,7 @@ import { getHttpExceptionCode } from '../helpers';
 import { 
   DEFAULT_EXCEPTION_MESSAGE, 
 } from '../constants';
-import { ExceptionAppCodes } from '../enums';
+import { EviromentTypes, ExceptionAppCodes } from '../enums';
 
 /**
  * Filtro global que captura TODAS las excepciones no manejadas
@@ -77,7 +77,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       method: request.method,
       requestId: request.headers['x-request-id'] as string,
       ...(details && { details }),
-      ...(process.env.NODE_ENV === 'development' && stack && { stack }),
+      ...(process.env.NODE_ENV === EviromentTypes.DEVELOPMENT && stack && { stack }),
     };
 
     // Severity Log Type
