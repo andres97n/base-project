@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
-import { CreateUserDto, LoginUserDto, RenewTokenDto } from './dto';
+import { CheckStatusTokenDto, CreateUserDto, LoginUserDto, RenewTokenDto } from './dto';
 
 
 @Controller('auth')
@@ -10,7 +10,7 @@ export class AuthController {
 
   @Post('register')
   createUser(@Body() createUserDto: CreateUserDto ) {
-    return this.authService.create( createUserDto );
+    return this.authService.createUser( createUserDto );
   }
 
   @Post('login')
@@ -23,11 +23,8 @@ export class AuthController {
     return this.authService.renewUserToken( tokenDto );
   }
 
-  // @Get('check-status')
-  // @Auth()
-  // checkAuthStatus(
-  //   @GetUser() user: User
-  // ) {
-  //   return this.authService.checkAuthStatus( user );
-  // }
+  @Post('check-status')
+  async checkStatusToken(@Body() tokenDto: CheckStatusTokenDto) {
+    return this.authService.checkStatusToken( tokenDto );
+  }
 }
