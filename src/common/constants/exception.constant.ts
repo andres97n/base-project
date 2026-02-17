@@ -12,3 +12,11 @@ export const EXCEPTION_UNAUTHORIZED_DEFAULT_MESSAGE = "Not Authorized";
 export const EXCEPTION_FORBIDDEN_DEFAULT_MESSAGE = "Access Denied";
 
 export const EXCEPTION_DATABASE_DEFAULT_MESSAGE = "Operational database error";
+
+export const SENSITIVE_VALIDATION_FIELDS = [
+  'password',
+  'confirmPassword',
+  'currentPassword',
+  'refreshToken',
+  'token',
+] as const;

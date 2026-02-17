@@ -13,3 +13,7 @@ export const comparePasswordWithHashed = (
 ): Promise<boolean> => {
   return bcrypt.compare(candidatePassword, passwordHashed);
 }
+
+export const hashString = async (word: string): Promise<string> => {
+  return await bcrypt.hash(word, 10);
+}
