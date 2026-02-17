@@ -26,7 +26,7 @@ export class BaseSchema {
   @Prop({
     type: String,
     required: false,
-    default: BaseEntityStates.ACTIVO, 
+    default: BaseEntityStates.ACTIVE, 
     enum: Object.values(BaseEntityStates),
   })
   state: string;

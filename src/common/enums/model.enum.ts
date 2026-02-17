@@ -1,5 +1,5 @@
 export enum BaseEntityStates {
-  ACTIVO = 'A',
-  INACTIVO = 'I',
-  ELIMINADO = 'D'
+  ACTIVE = 'A',
+  INACTIVE = 'I',
+  DELETED = 'D'
 }
