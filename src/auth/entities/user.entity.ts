@@ -7,8 +7,8 @@ import {
   USER_FULLNAME_ERROR_LENGTH, USER_PASSWORD_ERROR_LENGTH, 
   USER_PASSWORD_ERROR_REQUIRED, USER_PASSWORD_ERROR_VALIDATION 
 } from "../constants";
-import { isEmail, isPasswordValid } from "src/common/utils";
-import { compareUserPassword, validateAndHashPassword } from "../helpers";
+import { hashPassword, isEmail, isPasswordValid } from "src/common/utils";
+import { compareUserPassword } from "../helpers";
 
 
 @Schema({})
@@ -61,17 +61,29 @@ export class User extends BaseSchema{
     enum: Object.values(UserRoles),
   })
   roles: string[];
+
+  @Prop({
+    type: String,
+    required: false,
+    select: false
+  })
+  refreshToken: string;
+
+  @Prop({
+    type: Date,
+    required: false,
+    select: false
+  })
+  refreshTokenExpiresAt: Date;
 }
 
 
 const UserSchema = SchemaFactory.createForClass(User);
 
-UserSchema.pre('save', async function(next: (err?: Error) => void) {
-  await validateAndHashPassword(
-    this.password, 
-    next,
-    this.isModified('password')
-  );
+UserSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
+
+  this.password = await hashPassword(this.password);
 });
 
 UserSchema.methods.comparePassword = async function(

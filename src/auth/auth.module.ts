@@ -34,8 +34,7 @@ import { JwtHelper } from './helpers';
         return {
           secret: configService.get<string>('jwtSecret'),
           signOptions: {
-            expiresIn: configService.get<StringValue>('jwtExpireTime'),
-            
+            expiresIn: configService.get<StringValue>('jwtTime'),
           },
         };
       },
