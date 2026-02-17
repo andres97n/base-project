@@ -14,6 +14,6 @@ export const EnvConfiguration = (): EnvInterface => ({
   apiSubPath: process.env.API_SUB_PATH,
   port: +(process.env.PORT || DEFAULT_PORT),
   defaultPageSize: +(process.env.DEFAULT_PAGE_SIZE || DEFAULT_PAGE_SIZE),
-  jwtTime: process.env.JWT_EXPIRE_TIME,
+  jwtTime: process.env.JWT_TIME,
   jwtRefreshTime: process.env.JWT_REFRESH_TIME,
 });
