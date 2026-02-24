@@ -97,7 +97,7 @@ export class AuthService extends GenericService<User>{
     const { password, email } = loginUserDto;
 
     const user = await super.findOne({email}, {
-      email: 1, _id: 1
+      email: 1, password: 1, id: 1
     });
     if ( !user ) 
       throw new UnauthorizedException('Credentials are not valid (email)');
@@ -109,8 +109,9 @@ export class AuthService extends GenericService<User>{
       this.jwtHelper.getJwtPayload(user.id)
     );
 
-    return {
-      ...user,
+    const { password: _password, ...userWithoutPassword } = user as any;
+    return { 
+      ...userWithoutPassword,
       token: accessToken,
       refreshToken
     };
