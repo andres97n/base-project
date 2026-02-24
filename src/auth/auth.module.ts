@@ -18,6 +18,7 @@ import { JwtHelper } from './helpers';
   imports: [
     ConfigModule,
 
+    //Config your DB ORM
     MongooseModule.forFeature([
       {
         name: User.name,

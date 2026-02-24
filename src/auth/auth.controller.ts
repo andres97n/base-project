@@ -1,7 +1,12 @@
 import { Controller, Post, Body } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
-import { CheckStatusTokenDto, CreateUserDto, LoginUserDto, RenewTokenDto } from './dto';
+import { Auth, GetUser } from './decorators';
+import { 
+  CheckStatusTokenDto, CreateUserDto, 
+  LoginUserDto, RenewTokenDto 
+} from './dto';
+import { User } from './entities';
 
 
 @Controller('auth')
@@ -18,11 +23,16 @@ export class AuthController {
     return this.authService.login( loginUserDto );
   }
 
+  @Auth()
   @Post('refresh')
-  async refreshUserToken(@Body() tokenDto: RenewTokenDto) {
-    return this.authService.renewUserToken( tokenDto );
+  async refreshUserToken(
+    @GetUser() user: User,
+    @Body() tokenDto: RenewTokenDto
+  ) {
+    return this.authService.renewUserToken( user, tokenDto );
   }
 
+  @Auth()
   @Post('check-status')
   async checkStatusToken(@Body() tokenDto: CheckStatusTokenDto) {
     return this.authService.checkStatusToken( tokenDto );

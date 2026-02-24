@@ -30,4 +30,10 @@ export class JwtHelper {
     
     return this.jwtService.verifyAsync<JwtPayload>(token, { secret });
   }
+
+  getJwtPayload(userId: string): JwtPayload {
+    return {
+      id: userId
+    };
+  }
 }

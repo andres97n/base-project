@@ -38,15 +38,13 @@ export class AuthService extends GenericService<User>{
     });
   }
 
-  private async generateTokens(userId: string, withAccessToken: boolean = true) {
-    const payload = { id: userId};
-    
+  private async generateTokens(payload: JwtPayload, withAccessToken: boolean = true) {
     const accessToken = withAccessToken
       ? await this.jwtHelper.generateAccessToken(payload)
       : null;
     const refreshToken = await this.jwtHelper.generateRefreshToken(payload);
     
-    await this.storeRefreshToken(userId, refreshToken);
+    await this.storeRefreshToken(payload.id, refreshToken);
     
     return { accessToken, refreshToken };
   }
@@ -76,7 +74,9 @@ export class AuthService extends GenericService<User>{
   async createUser(createUserDto: CreateUserDto) {
     const newUser = await super.create(createUserDto)
 
-    const { accessToken, refreshToken } = await this.generateTokens(newUser.id);
+    const { accessToken, refreshToken } = await this.generateTokens(
+      this.jwtHelper.getJwtPayload(newUser.id)
+    );
     const { _id, fullName, email } = newUser.toObject();
 
     const data = {
@@ -96,8 +96,8 @@ export class AuthService extends GenericService<User>{
   async login( loginUserDto: LoginUserDto ) {
     const { password, email } = loginUserDto;
 
-    const user = await this.userModel.findOne({email}, {
-      email: true, _id: true
+    const user = await super.findOne({email}, {
+      email: 1, _id: 1
     });
     if ( !user ) 
       throw new UnauthorizedException('Credentials are not valid (email)');
@@ -105,7 +105,9 @@ export class AuthService extends GenericService<User>{
     if ( !comparePasswordWithHashed( password, user.password ) )
       throw new UnauthorizedException('Credentials are not valid (password)');
 
-    const { accessToken, refreshToken } = await this.generateTokens(user.id);
+    const { accessToken, refreshToken } = await this.generateTokens(
+      this.jwtHelper.getJwtPayload(user.id)
+    );
 
     return {
       ...user,
@@ -114,20 +116,21 @@ export class AuthService extends GenericService<User>{
     };
   }
 
-  async renewUserToken( { refreshToken }: RenewTokenDto ) {
-    const payload: JwtPayload = await this.getPayloadAndVerifyToken(refreshToken);
+  async renewUserToken( user: User, { refreshToken }: RenewTokenDto ) {
+    const { id }: JwtPayload = await this.getPayloadAndVerifyToken(refreshToken);
     
-    const user = await super.findById(payload.id);
     if (!user.refreshToken) throw new UnauthorizedException('Token not found');
     if (!user.refreshTokenExpiresAt || user.refreshTokenExpiresAt < new Date()) {
-      await this.clearRefreshToken(user.id);
+      await this.clearRefreshToken(id);
       throw new UnauthorizedException('Refresh token expirado en el servidor');
     }
     
     const isValid = await comparePasswordWithHashed(refreshToken, user.refreshToken);
     if (!isValid) throw new UnauthorizedException('Invalid refresh token or expired');
     
-    return await this.generateTokens(user.id);
+    return await this.generateTokens(
+      this.jwtHelper.getJwtPayload(id)
+    );
   }
 
   async checkStatusToken( { token }: CheckStatusTokenDto ): Promise<boolean> {
