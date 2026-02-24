@@ -1,10 +1,10 @@
 import { Controller, Post, Body } from '@nestjs/common';
 
-import { AuthService } from './auth.service';
+import { AuthService } from './services/auth.service';
 import { Auth, GetUser } from './decorators';
 import { 
   CheckStatusTokenDto, CreateUserDto, 
-  LoginUserDto, RenewTokenDto 
+  LoginUserDto 
 } from './dto';
 import { User } from './entities';
 
@@ -23,18 +23,21 @@ export class AuthController {
     return this.authService.login( loginUserDto );
   }
 
-  @Auth()
   @Post('refresh')
   async refreshUserToken(
-    @GetUser() user: User,
-    @Body() tokenDto: RenewTokenDto
+    @Body() { token }: CheckStatusTokenDto
   ) {
-    return this.authService.renewUserToken( user, tokenDto );
+    return this.authService.renewUserToken( token );
   }
 
-  @Auth()
   @Post('check-status')
   async checkStatusToken(@Body() tokenDto: CheckStatusTokenDto) {
     return this.authService.checkStatusToken( tokenDto );
+  }
+
+  @Auth()
+  @Post('logout')
+  async logout(@GetUser() user: User) {
+    return this.authService.logout( user.id );
   }
 }
