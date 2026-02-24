@@ -20,8 +20,8 @@ export class GenericService<T> {
 
   async findById(
     id: string, 
+    select?: string | Record<string, 0 | 1>,
     message?: string, 
-    select?: string | Record<string, 0 | 1>
   ) {
     const query = this.model.findById(id);
     if (select) query.select(select);
@@ -37,8 +37,8 @@ export class GenericService<T> {
 
   async findOne(
     filter: Partial<Record<keyof T, unknown>>, 
+    select?: string | Record<string, 0 | 1>,
     message?: string, 
-    select?: string | Record<string, 0 | 1>
   ): Promise<T> {
     const query = this.model.findOne(filter);
     if (select) query.select(select);
