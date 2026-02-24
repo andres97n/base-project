@@ -25,6 +25,8 @@ import { BaseEntityStates } from '../enums';
   }, 
 })
 export class BaseSchema {
+  id!: string;
+
   @Prop({
     type: String,
     required: false,

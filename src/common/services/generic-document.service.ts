@@ -1,97 +1,91 @@
 import { Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { HydratedDocument, Model, UpdateQuery, QueryFilter } from 'mongoose';
 
 import { DEFAULT_NOT_FOUND_MESSAGE } from '../constants';
 import { ResourceNotFoundException } from '../exceptions';
 import { BaseEntityStates } from '../enums';
+import { BaseSchema } from '../entities';
+import { LeanDoc } from '../types';
 
 
 @Injectable()
-export class GenericService<T> {
-  constructor(private readonly model: Model<T>) {}
+export class GenericService<T extends BaseSchema> {
+  constructor(private readonly model: Model<T>) { }
 
-  async findAll(select?: string | Record<string, 0 | 1>) {
-    const query = this.model.find();
-    if (select) {
-      query.select(select);
-    }
-    return await query.exec();
+  async findAll(select?: string | Record<string, 0 | 1>): Promise<LeanDoc<T>[]> {
+    const query = this.model.find().lean<LeanDoc<T>[]>({ virtuals: true });
+    if (select) query.select(select);
+    return query.exec();
   }
 
   async findById(
-    id: string, 
+    id: string,
     select?: string | Record<string, 0 | 1>,
-    message?: string, 
-  ) {
-    const query = this.model.findById(id);
+    message?: string,
+  ): Promise<LeanDoc<T>> {
+    const query = this.model.findById(id).lean<LeanDoc<T>>({ virtuals: true });
     if (select) query.select(select);
-    
+
     const record = await query.exec();
     if (!record) throw new ResourceNotFoundException(
       message || DEFAULT_NOT_FOUND_MESSAGE,
-      id
+      id,
     );
-
     return record;
   }
 
   async findOne(
-    filter: Partial<Record<keyof T, unknown>>, 
+    filter: QueryFilter<T>,
     select?: string | Record<string, 0 | 1>,
-    message?: string, 
-  ): Promise<T> {
-    const query = this.model.findOne(filter);
+    message?: string,
+  ): Promise<LeanDoc<T>> {
+    const query = this.model.findOne(filter).lean<LeanDoc<T>>({ virtuals: true });
     if (select) query.select(select);
-    
+
     const result = await query.exec();
     if (!result) throw new ResourceNotFoundException(
       message || DEFAULT_NOT_FOUND_MESSAGE,
-      '-'
+      '-',
     );
-
     return result;
   }
 
   async findOneWithoutException(
-    objectSearch: Partial<Record<keyof T, unknown>>, 
-    select?: string | Record<string, 0 | 1>
-  ) {
-    const query = this.model.findOne(objectSearch);
+    filter: QueryFilter<T>,
+    select?: string | Record<string, 0 | 1>,
+  ): Promise<LeanDoc<T> | null> {
+    const query = this.model.findOne(filter).lean<LeanDoc<T>>({ virtuals: true });
     if (select) query.select(select);
-    
-    return await query.exec();
+    return query.exec();
   }
 
-  async create(createDto: any) {
-    return await this.model.create(createDto);
+  async create(createDto: Partial<T>): Promise<HydratedDocument<T>> {
+    return this.model.create(createDto);
   }
 
-  async update(id: string, updateDto: any, message?: string) {
-    const record = await this.model.findByIdAndUpdate(
-      id,
-      updateDto,
-      { new: true }
-    );
+  async update(
+    id: string,
+    updateDto: UpdateQuery<T>,
+    message?: string,
+  ): Promise<HydratedDocument<T>> {
+    const record = await this.model.findByIdAndUpdate(id, updateDto, { new: true });
     if (!record) throw new ResourceNotFoundException(
       message || DEFAULT_NOT_FOUND_MESSAGE,
-      id
+      id,
     );
-
     return record;
   }
 
-  async remove(id: string, message?: string) {
+  async remove(id: string, message?: string): Promise<HydratedDocument<T>> {
     const record = await this.model.findByIdAndUpdate(
       id,
       { state: BaseEntityStates.DELETED },
-      { new: true }
+      { new: true },
     );
     if (!record) throw new ResourceNotFoundException(
       message || DEFAULT_NOT_FOUND_MESSAGE,
-      id
+      id,
     );
-
     return record;
   }
-
 }
