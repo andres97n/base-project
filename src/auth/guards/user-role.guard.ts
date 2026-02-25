@@ -27,7 +27,6 @@ export class UserRoleGuard implements CanActivate {
     const user = req.user as User;
 
     if ( !user ) throw new BadRequestException('User not found');
-    if (!user.isActive) throw new UnauthorizedException('This user is suspended');
     
     for (const role of user.roles ) {
       if ( validRoles.includes( role ) ) return true;
