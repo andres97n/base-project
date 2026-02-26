@@ -1,8 +1,9 @@
 import { FlattenMaps, Types } from "mongoose";
 
 
-export type LeanDoc<T> = FlattenMaps<T> & {
+export type LocalFlattlenMaps<T> = FlattenMaps<T> & {
   _id: Types.ObjectId;
+  id?: string;
   createdAt: Date;
   updatedAt: Date;
 };
