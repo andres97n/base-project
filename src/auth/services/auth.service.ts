@@ -96,6 +96,5 @@ export class AuthService{
 
   async getUsers(): Promise<Record<string, any>> {
     return await this.userRepository.searchUsers('a');
-    // return users.data;
   }
 }

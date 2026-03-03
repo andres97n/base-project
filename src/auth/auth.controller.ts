@@ -4,9 +4,11 @@ import { AuthService } from './services/auth.service';
 import { Auth, GetUser } from './decorators';
 import { 
   CheckStatusTokenDto, CreateUserDto, 
-  LoginUserDto 
+  LoginUserDto, 
+  RenewTokenDto
 } from './dto';
 import { User } from './entities';
+import { UserRoles } from './enums';
 
 
 @Controller('auth')
@@ -25,9 +27,9 @@ export class AuthController {
 
   @Post('refresh')
   async refreshUserToken(
-    @Body() { token }: CheckStatusTokenDto
+    @Body() { refreshToken }: RenewTokenDto
   ) {
-    return this.authService.renewUserToken( token );
+    return this.authService.renewUserToken( refreshToken );
   }
 
   @Post('check-status')
@@ -36,12 +38,12 @@ export class AuthController {
   }
 
   @Auth()
-  @Post('logout')
+  @Get('logout')
   async logout(@GetUser() user: User) {
     return this.authService.logout( user.id );
   }
 
-  @Auth()
+  @Auth(UserRoles.ADMIN)
   @Get('users')
   async getUsers() {
     return this.authService.getUsers();
