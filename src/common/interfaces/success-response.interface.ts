@@ -1,3 +1,5 @@
+import { PaginatedResult } from './index';
+
 
 export interface SuccessMeta {
   total?: number;
@@ -10,7 +12,7 @@ export interface SuccessResponse<T = any> {
   ok: true;
   statusCode: number;
   message: string;
-  data: T;
+  data: T | PaginatedResult<T>;
   timestamp: string;
   path: string;
   method: string;
