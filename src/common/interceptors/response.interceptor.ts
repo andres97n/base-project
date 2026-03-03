@@ -13,6 +13,7 @@ import { Request, Response } from 'express';
 
 import { SuccessResponse } from '../interfaces';
 import { RAW_RESPONSE_KEY, RESPONSE_DEFAULT_MESSAGE } from '../constants';
+import { getMetaDataFromResponse } from '../helpers';
 
 
 @Injectable()
@@ -43,7 +44,7 @@ export class ResponseInterceptor<T>
         const anyData: any = data as any;
 
         const payload = anyData?.data ?? data;
-        const meta = anyData?.meta;
+        const meta = getMetaDataFromResponse(anyData);
         const customMessage = anyData?.message;
 
         const successResponse: SuccessResponse<any> = {
