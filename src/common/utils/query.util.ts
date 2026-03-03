@@ -5,7 +5,7 @@ type LeanWithMongoId<T> = FlattenMaps<T> & { _id?: ObjectId };
 
 export const getResultWithVirtualId = <T>(
   result: LeanWithMongoId<T>,
-): FlattenMaps<T> & { id?: string } => {
+): LeanWithMongoId<T> => {
   const { _id, ...rest } = result;
 
   if (!_id) return result;
@@ -15,5 +15,5 @@ export const getResultWithVirtualId = <T>(
   return {
     id,
     ...rest,
-  } as FlattenMaps<T> & { id: string };
+  } as LeanWithMongoId<T>;
 };
