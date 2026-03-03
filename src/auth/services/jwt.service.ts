@@ -8,7 +8,7 @@ import ms from 'ms';
 import { User } from '../entities';
 import { GenericService } from 'src/common/services';
 import { hashString } from 'src/common/utils';
-import { JWT_REFRESH_TIME } from 'src/common/constants';
+import { CONFIG_FIELD_JWT_REFRESH_TIME, JWT_REFRESH_TIME } from 'src/common/constants';
 import { JwtPayload } from '../interfaces';
 import { JwtHelper } from '../helpers';
 import { JWT_FIELD_NAME_REFRESH_TOKEN } from '../constants';
@@ -27,7 +27,7 @@ export class JwtService extends GenericService<User>{
 
   async storeRefreshToken(userId: string, token: string) {
     const hashed = await hashString(token);
-    const refreshExpiration = (this.configService.get<string>('jwtRefreshTime') ?? JWT_REFRESH_TIME) as ms.StringValue;
+    const refreshExpiration = (this.configService.get<string>(CONFIG_FIELD_JWT_REFRESH_TIME) ?? JWT_REFRESH_TIME) as ms.StringValue;
     const expiresInMs = ms(refreshExpiration);
     const expiresAt = new Date(Date.now() + expiresInMs);
 

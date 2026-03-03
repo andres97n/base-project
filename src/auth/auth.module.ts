@@ -10,13 +10,15 @@ import { AuthController } from './auth.controller';
 import { User, UserSchema } from './entities';
 import { JwtStrategy } from './strategies';
 import { JwtHelper } from './helpers';
+import { UsersRepository } from './repositories/users.repository';
 
 
 @Module({
   controllers: [AuthController],
   providers: [
     AuthService, JwtService,
-    JwtStrategy, JwtHelper
+    JwtStrategy, JwtHelper,
+    UsersRepository,
   ],
   imports: [
     ConfigModule,
@@ -44,6 +46,6 @@ import { JwtHelper } from './helpers';
       },
     })
   ],
-  exports: [JwtStrategy, PassportModule, JwtModule]
+  exports: [JwtStrategy, PassportModule, JwtModule, UsersRepository]
 })
 export class AuthModule {}
