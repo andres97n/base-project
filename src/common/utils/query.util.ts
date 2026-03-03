@@ -1,17 +1,19 @@
-import { FlattenMaps } from "mongoose";
+import { FlattenMaps, ObjectId } from 'mongoose';
 
 
-type LeanWithMongoId<T> = FlattenMaps<T> & { _id?: any };
+type LeanWithMongoId<T> = FlattenMaps<T> & { _id?: ObjectId };
 
-export const getVirtualIdFromQuery = <T>(
-  result: FlattenMaps<T>,
-): FlattenMaps<T> => {
-  const { _id, ...rest } = result as LeanWithMongoId<T>;
+export const getResultWithVirtualId = <T>(
+  result: LeanWithMongoId<T>,
+): FlattenMaps<T> & { id?: string } => {
+  const { _id, ...rest } = result;
+
   if (!_id) return result;
 
+  const id = String(_id);
+
   return {
+    id,
     ...rest,
-    _id,
-    id: _id?.toString(),
-  } as FlattenMaps<T>;
+  } as FlattenMaps<T> & { id: string };
 };
