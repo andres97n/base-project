@@ -15,7 +15,7 @@ import { ResourceNotFoundException } from '../exceptions';
 import { BaseRepositoryInterface, PaginatedResult } from '../interfaces';
 import { BaseEntityStates } from '../enums';
 import { BaseSchema } from '../entities';
-import { getVirtualIdFromQuery } from '../utils';
+import { getResultWithVirtualId } from '../utils';
 
 
 @Injectable()
@@ -30,7 +30,7 @@ export abstract class BaseRepository<T extends BaseSchema>
 
   async create(data: Partial<T>): Promise<FlattenMaps<T>> {
     const record = (await this.model.create(data)).toObject() as FlattenMaps<T>;
-    return getVirtualIdFromQuery(record);
+    return getResultWithVirtualId(record);
   }
 
   async findById(
@@ -42,7 +42,7 @@ export abstract class BaseRepository<T extends BaseSchema>
     
     this.validateNotFoundRecord(record as FlattenMaps<T>, errorMessage, id);
     
-    return getVirtualIdFromQuery(record as FlattenMaps<T>);
+    return getResultWithVirtualId(record as FlattenMaps<T>);
     
   }
 
@@ -55,7 +55,7 @@ export abstract class BaseRepository<T extends BaseSchema>
     
     this.validateNotFoundRecord(record as FlattenMaps<T>, errorMessage);
 
-    return getVirtualIdFromQuery(record as FlattenMaps<T>);
+    return getResultWithVirtualId(record as FlattenMaps<T>);
   }
 
   async findAll(
@@ -101,7 +101,7 @@ export abstract class BaseRepository<T extends BaseSchema>
       .exec();
 
     this.validateNotFoundRecord(recordUpdated as FlattenMaps<T>);
-    return getVirtualIdFromQuery(recordUpdated as FlattenMaps<T>);
+    return getResultWithVirtualId(recordUpdated as FlattenMaps<T>);
   }
 
   async remove(id: string): Promise<boolean> {
