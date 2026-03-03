@@ -1,37 +1,34 @@
-// users.service.ts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 import ms from 'ms';
 
-import { User } from '../entities';
-import { GenericService } from 'src/common/services';
 import { hashString } from 'src/common/utils';
-import { CONFIG_FIELD_JWT_REFRESH_TIME, JWT_REFRESH_TIME } from 'src/common/constants';
+import { 
+  CONFIG_FIELD_JWT_REFRESH_TIME, CONFIG_FIELD_JWT_SECRET_REFRESH, 
+  JWT_REFRESH_TIME 
+} from 'src/common/constants';
 import { JwtPayload } from '../interfaces';
 import { JwtHelper } from '../helpers';
-import { JWT_FIELD_NAME_REFRESH_TOKEN } from '../constants';
+import { UserRepository } from '../repositories/user.repository';
 
 
 @Injectable()
-export class JwtService extends GenericService<User>{
+export class JwtService{
   constructor(
-    @InjectModel(User.name)
-    private readonly userModel: Model<User>,
+    private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
     private readonly jwtHelper: JwtHelper,
-  ) {
-    super(userModel);
-  }
+  ) {}
 
   async storeRefreshToken(userId: string, token: string) {
     const hashed = await hashString(token);
-    const refreshExpiration = (this.configService.get<string>(CONFIG_FIELD_JWT_REFRESH_TIME) ?? JWT_REFRESH_TIME) as ms.StringValue;
+    const refreshExpiration = (this.configService.get<string>(
+      CONFIG_FIELD_JWT_REFRESH_TIME) ?? JWT_REFRESH_TIME
+    ) as ms.StringValue;
     const expiresInMs = ms(refreshExpiration);
     const expiresAt = new Date(Date.now() + expiresInMs);
 
-    await this.userModel.findByIdAndUpdate(userId, {
+    await this.userRepository.update(userId, {
       refreshToken: hashed,
       refreshTokenExpiresAt: expiresAt,
     });
@@ -49,7 +46,7 @@ export class JwtService extends GenericService<User>{
   }
   
   async clearRefreshToken(userId: string): Promise<void> {
-    await super.update(userId, {
+    await this.userRepository.update(userId, {
       refreshTokenHash: null,
       refreshTokenExpiresAt: null,
     });
@@ -61,7 +58,7 @@ export class JwtService extends GenericService<User>{
     try {
       payload = await this.jwtHelper.verifyToken(
         refreshToken, 
-        JWT_FIELD_NAME_REFRESH_TOKEN
+        CONFIG_FIELD_JWT_SECRET_REFRESH
       );
     } catch (e) {
       throw new UnauthorizedException('Invalid refresh token or expired');

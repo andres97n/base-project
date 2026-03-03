@@ -3,12 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { BaseRepository } from 'src/common/repositories';
-import { User } from '../entities';
 import { PaginatedResult } from 'src/common/interfaces';
+import { User } from '../entities';
 
 
 @Injectable()
-export class UsersRepository extends BaseRepository<User> {
+export class UserRepository extends BaseRepository<User> {
   constructor(
     @InjectModel(User.name)
     private readonly userModel: Model<User>,
@@ -16,8 +16,8 @@ export class UsersRepository extends BaseRepository<User> {
     super(userModel);
   }
 
-  async findByEmail(email: string) {
-    return this.findOne({ email });
+  async findByEmail(email: string, select: string = 'email fullName, password') {
+    return super.findOne({ email }, { select });
   }
 
   async searchUsers(
@@ -32,7 +32,7 @@ export class UsersRepository extends BaseRepository<User> {
       ],
     };
 
-    return this.findAll(filter, page, limit, {
+    return super.findAll(filter, page, limit, {
       select: 'name email isActive createdAt',
     });
   }

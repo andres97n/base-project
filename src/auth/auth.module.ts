@@ -10,7 +10,8 @@ import { AuthController } from './auth.controller';
 import { User, UserSchema } from './entities';
 import { JwtStrategy } from './strategies';
 import { JwtHelper } from './helpers';
-import { UsersRepository } from './repositories/users.repository';
+import { UserRepository } from './repositories/user.repository';
+import { CONFIG_FIELD_JWT_SECRET, CONFIG_FIELD_JWT_TIME } from 'src/common/constants';
 
 
 @Module({
@@ -18,7 +19,7 @@ import { UsersRepository } from './repositories/users.repository';
   providers: [
     AuthService, JwtService,
     JwtStrategy, JwtHelper,
-    UsersRepository,
+    UserRepository,
   ],
   imports: [
     ConfigModule,
@@ -38,14 +39,14 @@ import { UsersRepository } from './repositories/users.repository';
       inject: [ ConfigService ],
       useFactory: ( configService: ConfigService ) => {
         return {
-          secret: configService.get<string>('jwtSecret'),
+          secret: configService.get<string>(CONFIG_FIELD_JWT_SECRET),
           signOptions: {
-            expiresIn: configService.get<StringValue>('jwtTime'),
+            expiresIn: configService.get<StringValue>(CONFIG_FIELD_JWT_TIME),
           },
         };
       },
     })
   ],
-  exports: [JwtStrategy, PassportModule, JwtModule, UsersRepository]
+  exports: [JwtStrategy, PassportModule, JwtModule, UserRepository]
 })
 export class AuthModule {}

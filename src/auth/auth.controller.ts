@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 
 import { AuthService } from './services/auth.service';
 import { Auth, GetUser } from './decorators';
@@ -39,5 +39,11 @@ export class AuthController {
   @Post('logout')
   async logout(@GetUser() user: User) {
     return this.authService.logout( user.id );
+  }
+
+  @Auth()
+  @Get('users')
+  async getUsers() {
+    return this.authService.getUsers();
   }
 }

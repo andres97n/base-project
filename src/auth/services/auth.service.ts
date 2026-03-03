@@ -1,41 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 
 import { JwtService } from './jwt.service';
-import { GenericService } from 'src/common/services';
 import { comparePasswordWithHashed } from 'src/common/utils';
 import { UnauthorizedException } from 'src/common/exceptions';
 import { 
   CheckStatusTokenDto, CreateUserDto, 
-  LoginUserDto, RenewTokenDto 
+  LoginUserDto
 } from '../dto';
-import { User } from '../entities';
 import { JwtPayload } from '../interfaces';
+import { UserRepository } from '../repositories/user.repository';
 
 
 @Injectable()
-export class AuthService extends GenericService<User>{
+export class AuthService{
   constructor(
-    @InjectModel(User.name)
-    private readonly userModel: Model<User>,
+    private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
-  ) {
-    super(userModel);
-  }
+  ) {}
 
   async createUser(createUserDto: CreateUserDto) {
-    const newUser = await super.create(createUserDto)
+    const newUser = await this.userRepository.create(createUserDto)
 
     const { accessToken, refreshToken } = await this.jwtService.generateTokens(
       this.jwtService.getJwtPayload(newUser.id)
     );
-    const { _id, fullName, email } = newUser.toObject();
 
     const data = {
-      _id,
-      email,
-      fullName,
+      ...newUser,
       token: accessToken,
       refreshToken
     };
@@ -49,9 +40,7 @@ export class AuthService extends GenericService<User>{
   async login( loginUserDto: LoginUserDto ) {
     const { password, email } = loginUserDto;
 
-    const user = await super.findOne({email}, {
-      email: 1, password: 1
-    });
+    const user = await this.userRepository.findByEmail(email);
     
     if ( !user ) 
       throw new UnauthorizedException('Credentials are not valid (email)');
@@ -63,7 +52,7 @@ export class AuthService extends GenericService<User>{
       this.jwtService.getJwtPayload(user.id)
     );
 
-    const { password: _password, ...userWithoutPassword } = user as any;
+    const { password: _password, ...userWithoutPassword } = user;
     return { 
       ...userWithoutPassword,
       token: accessToken,
@@ -74,8 +63,8 @@ export class AuthService extends GenericService<User>{
   async renewUserToken( token: string ) {
     const { id }: JwtPayload = await this.jwtService.getPayloadAndVerifyToken(token);
     
-    const { refreshToken, refreshTokenExpiresAt } = await super.findById(id, {
-      refreshToken: 1, refreshTokenExpiresAt: 1
+    const { refreshToken, refreshTokenExpiresAt } = await this.userRepository.findById(id, {
+      select: 'refreshToken refreshTokenExpiresAt'
     });
 
     if (!refreshToken) throw new UnauthorizedException('Token not found');
@@ -101,8 +90,12 @@ export class AuthService extends GenericService<User>{
     await this.jwtService.clearRefreshToken(userId);
     return {
       data: { id: userId },
-      message: 'Get well soon!!'
+      message: 'Come back soon!!'
     };
   }
-  
+
+  async getUsers(): Promise<Record<string, any>> {
+    return await this.userRepository.searchUsers('a');
+    // return users.data;
+  }
 }
