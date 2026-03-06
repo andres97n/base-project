@@ -33,6 +33,12 @@ export interface BaseRepositoryInterface<T extends BaseSchema> {
   ): Promise<PaginatedResult<FlattenMaps<T>>>;
 
   update(
+    filter: QueryFilter<T>,
+    data: UpdateQuery<T>,
+    options?: QueryOptions,
+  ): Promise<FlattenMaps<T>>;
+
+  updateById(
     id: string,
     data: UpdateQuery<T>,
     options?: QueryOptions,

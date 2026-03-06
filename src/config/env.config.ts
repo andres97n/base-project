@@ -1,4 +1,5 @@
 import { 
+  CACHE_TIME_DURATION,
   CONFIG_FIELD_JWT_REFRESH_TIME,
   CONFIG_FIELD_JWT_SECRET,
   CONFIG_FIELD_JWT_SECRET_REFRESH,
@@ -11,7 +12,6 @@ import { EnvInterface } from "src/common/interfaces";
 
 
 export const EnvConfiguration = (): EnvInterface => ({
-  mongodbUri: process.env.DB_URI || '',
   [CONFIG_FIELD_JWT_SECRET]: process.env.JWT_SECRET || '',
   [CONFIG_FIELD_JWT_SECRET_REFRESH]: process.env.JWT_REFRESH_SECRET || '',
   environment: EviromentTypes[process.env.NODE_ENV || EviromentTypes.DEVELOPMENT],
@@ -20,4 +20,6 @@ export const EnvConfiguration = (): EnvInterface => ({
   defaultPageSize: +(process.env.DEFAULT_PAGE_SIZE || DEFAULT_PAGE_SIZE),
   [CONFIG_FIELD_JWT_TIME]: process.env.JWT_TIME,
   [CONFIG_FIELD_JWT_REFRESH_TIME]: process.env.JWT_REFRESH_TIME,
+  enableCache: (process.env.ENABLE_CACHE === 'true'),
+  cacheExpiredTime: +(process.env.CACHE_EXPIRED_TIME || CACHE_TIME_DURATION)
 });

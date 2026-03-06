@@ -86,7 +86,7 @@ export abstract class BaseRepository<T extends BaseSchema>
     };
   }
 
-  async update(
+  async updateById(
     id: string,
     data: UpdateQuery<T>,
     options: QueryOptions = {},
@@ -94,6 +94,24 @@ export abstract class BaseRepository<T extends BaseSchema>
     const recordUpdated = await this.model
       .findByIdAndUpdate(
         id,
+        { ...data, updatedAt: new Date() },
+        { ...options, new: true },
+      )
+      .lean()
+      .exec();
+
+    this.validateNotFoundRecord(recordUpdated as FlattenMaps<T>);
+    return getResultWithVirtualId(recordUpdated as FlattenMaps<T>);
+  }
+
+  async update(
+    filter: QueryFilter<T>,
+    data: UpdateQuery<T>,
+    options: QueryOptions = {},
+  ): Promise<FlattenMaps<T>> {
+    const recordUpdated = await this.model
+      .findByIdAndUpdate(
+        filter,
         { ...data, updatedAt: new Date() },
         { ...options, new: true },
       )

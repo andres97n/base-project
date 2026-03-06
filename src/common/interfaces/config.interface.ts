@@ -6,7 +6,6 @@ import { EviromentTypes } from "../enums";
 
 
 export interface EnvInterface {
-  mongodbUri: string;
   [CONFIG_FIELD_JWT_SECRET]: string;
   [CONFIG_FIELD_JWT_SECRET_REFRESH]: string;
   environment?: EviromentTypes;
@@ -15,4 +14,11 @@ export interface EnvInterface {
   defaultPageSize?: number;
   [CONFIG_FIELD_JWT_TIME]?: string;
   [CONFIG_FIELD_JWT_REFRESH_TIME]?: string;
+  enableCache: boolean;
+  cacheExpiredTime: number;
+}
+
+export interface DatabaseConfigInterface {
+  dbUri: string;
+  port?: number | undefined;
 }

@@ -1,19 +1,22 @@
 import * as https from 'node:https';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConditionalModule, ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CacheModule } from '@nestjs/cache-manager';
 
+import { CommonModule } from './common/common.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { EnvConfiguration, JoiValidationSchema } from './config';
+import { DatabaseConfiguration } from './config/database.config';
 
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [ EnvConfiguration ],
+      load: [ EnvConfiguration, DatabaseConfiguration ],
       validationSchema: JoiValidationSchema,
     }),
 
@@ -21,7 +24,7 @@ import { EnvConfiguration, JoiValidationSchema } from './config';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('mongodbUri'), //Configure URI BD
+        uri: configService.get<string>('dbUri'), //Configure URI BD
       }),
     }),
 
@@ -33,7 +36,16 @@ import { EnvConfiguration, JoiValidationSchema } from './config';
       // httpAgent: new http.Agent({ keepAlive: true }),
     }),
 
-    AuthModule
+    ConditionalModule.registerWhen(
+      CacheModule.register({
+        isGlobal: true,
+        ttl: EnvConfiguration().cacheExpiredTime,
+      }),
+      () => EnvConfiguration().enableCache,
+    ),
+
+    CommonModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
