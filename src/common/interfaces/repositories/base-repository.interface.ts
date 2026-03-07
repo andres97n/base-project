@@ -44,5 +44,7 @@ export interface BaseRepositoryInterface<T extends BaseSchema> {
     options?: QueryOptions,
   ): Promise<FlattenMaps<T>>;
 
-  remove(id: string): Promise<boolean>;
+  remove(filter: QueryFilter<T>): Promise<boolean>;
+
+  removeById(id: string): Promise<boolean>;
 }

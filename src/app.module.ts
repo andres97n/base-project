@@ -16,6 +16,7 @@ import { DatabaseConfiguration } from './config/database.config';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       load: [ EnvConfiguration, DatabaseConfiguration ],
       validationSchema: JoiValidationSchema,
     }),

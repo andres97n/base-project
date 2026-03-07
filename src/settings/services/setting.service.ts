@@ -1,6 +1,6 @@
 import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import type { Cache } from 'cache-manager';
 
 import { SettingRepository } from '../repositories';
 import { Setting } from '../schemas';
@@ -20,11 +20,9 @@ export class SettingService implements OnModuleInit {
   }
 
   private async preloadCache(): Promise<void> {
-    //TODO: FILTER SETTINGS DATA
-    const settingsQuey = await this.settingRepository.findAll();
-    const settings = settingsQuey.data;
+    const { data } = await this.settingRepository.getInitialSettings();
 
-    for (const setting of settings) {
+    for (const setting of data) {
       await this.cacheManager.set(
         `${this.CACHE_PREFIX}${setting.key}`,
         setting.value,
@@ -59,7 +57,7 @@ export class SettingService implements OnModuleInit {
   }
 
   async delete(key: string): Promise<void> {
-    await this.settingModel.deleteOne({ key });
+    await this.settingRepository.remove({ key });
     await this.cacheManager.del(`${this.CACHE_PREFIX}${key}`);
   }
 }

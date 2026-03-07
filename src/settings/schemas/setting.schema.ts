@@ -27,6 +27,13 @@ export class Setting extends BaseSchema{
     type: String 
   })
   description?: string;
+
+  @Prop({
+    required: false,
+    type: Boolean ,
+    default: false
+  })
+  isInitialSetting?: boolean;
 }
 
 export const SettingSchema = SchemaFactory.createForClass(Setting);
