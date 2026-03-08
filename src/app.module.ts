@@ -11,6 +11,7 @@ import {
 } from './core/config';
 import { DatabaseConfiguration } from './core/config/database.config';
 import { DatabaseModule } from './core/database';
+import { ThrottlerLocalModule } from './core/throttler';
 
 
 @Module({
@@ -42,6 +43,7 @@ import { DatabaseModule } from './core/database';
       () => CacheConfiguration().enableCache,
     ),
 
+    ThrottlerLocalModule,
     DatabaseModule,
     AuthModule,
   ],
