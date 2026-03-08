@@ -6,7 +6,11 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { v4 as uuidv4 } from 'uuid';
 
 import { AppModule } from './app.module';
-import { API_SUB_PATH, DEFAULT_PORT, EXCEPTION_VALIDATION_DEFAULT_MESSAGE } from './common/constants';
+import { 
+  API_SUB_PATH, DEFAULT_APP_VERSION, 
+  DEFAULT_PORT, DEFAULT_PREFFIX_VERSION, 
+  EXCEPTION_VALIDATION_DEFAULT_MESSAGE 
+} from './common/constants';
 import { ValidationExceptionFilter, AllExceptionsFilter, MongooseExceptionFilter } from './common/filters';
 import { LoggingInterceptor, ResponseInterceptor } from './common/interceptors';
 
@@ -23,7 +27,8 @@ async function bootstrap() {
   
   app.enableVersioning({
     type: VersioningType.URI,
-    defaultVersion: '1',
+    defaultVersion: DEFAULT_APP_VERSION,
+    prefix: DEFAULT_PREFFIX_VERSION
   });
   
   app.useGlobalPipes(
