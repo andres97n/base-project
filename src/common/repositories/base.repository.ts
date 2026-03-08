@@ -86,7 +86,7 @@ export abstract class BaseRepository<T extends BaseSchema>
     };
   }
 
-  async update(
+  async updateById(
     id: string,
     data: UpdateQuery<T>,
     options: QueryOptions = {},
@@ -104,7 +104,38 @@ export abstract class BaseRepository<T extends BaseSchema>
     return getResultWithVirtualId(recordUpdated as FlattenMaps<T>);
   }
 
-  async remove(id: string): Promise<boolean> {
+  async update(
+    filter: QueryFilter<T>,
+    data: UpdateQuery<T>,
+    options: QueryOptions = {},
+  ): Promise<FlattenMaps<T>> {
+    const recordUpdated = await this.model
+      .findByIdAndUpdate(
+        filter,
+        { ...data, updatedAt: new Date() },
+        { ...options, new: true },
+      )
+      .lean()
+      .exec();
+
+    this.validateNotFoundRecord(recordUpdated as FlattenMaps<T>);
+    return getResultWithVirtualId(recordUpdated as FlattenMaps<T>);
+  }
+
+  async remove(filter: QueryFilter<T>): Promise<boolean> {
+    const recordDeleted = await this.model
+    .findByIdAndUpdate(
+      filter,
+      { state: BaseEntityStates.DELETED, updatedAt: new Date() },
+      { new: true },
+    )
+    .lean()
+    .exec();
+
+    return this.getRemoveResponse(recordDeleted as FlattenMaps<T>);
+  }
+
+  async removeById(id: string): Promise<boolean> {
     const recordDeleted = await this.model
     .findByIdAndUpdate(
       id,
@@ -114,7 +145,11 @@ export abstract class BaseRepository<T extends BaseSchema>
     .lean()
     .exec();
 
-    this.validateNotFoundRecord(recordDeleted as FlattenMaps<T>);
+    return this.getRemoveResponse(recordDeleted as FlattenMaps<T>);
+  }
+
+  private getRemoveResponse(recordDeleted: FlattenMaps<T>) {
+    this.validateNotFoundRecord(recordDeleted);
 
     if (!recordDeleted || !recordDeleted.state) return false;
     return (recordDeleted.state === BaseEntityStates.DELETED);

@@ -9,3 +9,5 @@ export const DEFAULT_PORT = 3000;
 export const JWT_TIME = "2h"; //Example
 
 export const JWT_REFRESH_TIME = "7d"; //Example
+
+export const CACHE_TIME_DURATION = 300000; // 5 min in ms

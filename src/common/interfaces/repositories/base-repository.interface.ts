@@ -33,10 +33,18 @@ export interface BaseRepositoryInterface<T extends BaseSchema> {
   ): Promise<PaginatedResult<FlattenMaps<T>>>;
 
   update(
+    filter: QueryFilter<T>,
+    data: UpdateQuery<T>,
+    options?: QueryOptions,
+  ): Promise<FlattenMaps<T>>;
+
+  updateById(
     id: string,
     data: UpdateQuery<T>,
     options?: QueryOptions,
   ): Promise<FlattenMaps<T>>;
 
-  remove(id: string): Promise<boolean>;
+  remove(filter: QueryFilter<T>): Promise<boolean>;
+
+  removeById(id: string): Promise<boolean>;
 }

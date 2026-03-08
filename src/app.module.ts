@@ -1,28 +1,30 @@
 import * as https from 'node:https';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConditionalModule, ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
-import { MongooseModule } from '@nestjs/mongoose';
+import { CacheModule } from '@nestjs/cache-manager';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { EnvConfiguration, JoiValidationSchema } from './config';
+import { 
+  CacheConfiguration, AppConfiguration, 
+  JoiValidationSchema, JwtConfiguration 
+} from './core/config';
+import { DatabaseConfiguration } from './core/config/database.config';
+import { DatabaseModule } from './core/database';
+import { ThrottlerLocalModule } from './core/throttler';
 
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [ EnvConfiguration ],
+      isGlobal: true,
+      load: [ 
+        AppConfiguration, 
+        DatabaseConfiguration,
+        JwtConfiguration,
+        CacheConfiguration
+      ],
       validationSchema: JoiValidationSchema,
-    }),
-
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('mongodbUri'), //Configure URI BD
-      }),
     }),
 
     HttpModule.register({
@@ -33,9 +35,19 @@ import { EnvConfiguration, JoiValidationSchema } from './config';
       // httpAgent: new http.Agent({ keepAlive: true }),
     }),
 
-    AuthModule
+    ConditionalModule.registerWhen(
+      CacheModule.register({
+        isGlobal: true,
+        ttl: CacheConfiguration().cacheExpiredTime,
+      }),
+      () => CacheConfiguration().enableCache,
+    ),
+
+    ThrottlerLocalModule,
+    DatabaseModule,
+    AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
