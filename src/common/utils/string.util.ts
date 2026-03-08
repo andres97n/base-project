@@ -1,4 +1,4 @@
-import { USER_PASSWORD_PATTERN_REG } from "src/auth/constants";
+import { USER_PASSWORD_PATTERN_REG } from "src/modules/auth/constants";
 
 
 export const isEmail = (email: string) => {

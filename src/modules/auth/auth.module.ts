@@ -5,13 +5,13 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import type { StringValue } from 'ms';
 
+import { AuthController } from './controllers';
 import { AuthService, JwtService } from './services';
-import { AuthController } from './auth.controller';
 import { User, UserSchema } from './entities';
 import { JwtStrategy } from './strategies';
-import { JwtHelper } from './helpers';
-import { UserRepository } from './repositories/user.repository';
+import { UserRepository } from './repositories';
 import { CONFIG_FIELD_JWT_SECRET, CONFIG_FIELD_JWT_TIME } from 'src/common/constants';
+import { JwtHelper } from './helpers';
 
 
 @Module({

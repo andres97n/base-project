@@ -8,7 +8,7 @@ import {
   LoginUserDto
 } from '../dto';
 import { JwtPayload } from '../interfaces';
-import { UserRepository } from '../repositories/user.repository';
+import { UserRepository } from '../repositories';
 
 
 @Injectable()

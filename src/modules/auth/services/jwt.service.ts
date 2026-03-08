@@ -9,7 +9,7 @@ import {
 } from 'src/common/constants';
 import { JwtPayload } from '../interfaces';
 import { JwtHelper } from '../helpers';
-import { UserRepository } from '../repositories/user.repository';
+import { UserRepository } from '../repositories';
 
 
 @Injectable()
@@ -28,7 +28,7 @@ export class JwtService{
     const expiresInMs = ms(refreshExpiration);
     const expiresAt = new Date(Date.now() + expiresInMs);
 
-    await this.userRepository.update(userId, {
+    await this.userRepository.updateById(userId, {
       refreshToken: hashed,
       refreshTokenExpiresAt: expiresAt,
     });
@@ -46,7 +46,7 @@ export class JwtService{
   }
   
   async clearRefreshToken(userId: string): Promise<void> {
-    await this.userRepository.update(userId, {
+    await this.userRepository.updateById(userId, {
       refreshTokenHash: null,
       refreshTokenExpiresAt: null,
     });
