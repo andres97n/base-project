@@ -4,7 +4,7 @@ import { ConditionalModule, ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
 
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { 
   CacheConfiguration, AppConfiguration, 
   JoiValidationSchema, JwtConfiguration 
