@@ -45,7 +45,7 @@ export class AuthService{
     if ( !user ) 
       throw new UnauthorizedException('Credentials are not valid (email)');
       
-    if ( !comparePasswordWithHashed( password, user.password ) )
+    if ( !(await comparePasswordWithHashed( password, user.password )) )
       throw new UnauthorizedException('Credentials are not valid (password)');
 
     const { accessToken, refreshToken } = await this.jwtService.generateTokens(
@@ -92,9 +92,5 @@ export class AuthService{
       data: { id: userId },
       message: 'Come back soon!!'
     };
-  }
-
-  async getUsers(): Promise<Record<string, any>> {
-    return await this.userRepository.searchUsers('a');
   }
 }
