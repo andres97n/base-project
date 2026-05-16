@@ -3,8 +3,11 @@ import { Module } from '@nestjs/common';
 import { ConditionalModule, ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
+import { APP_GUARD } from '@nestjs/core';
 
 import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { JwtAuthGuard } from './modules/auth/guards';
 import { 
   CacheConfiguration, AppConfiguration, 
   JoiValidationSchema, JwtConfiguration 
@@ -46,8 +49,11 @@ import { ThrottlerLocalModule } from './core/throttler';
     ThrottlerLocalModule,
     DatabaseModule,
     AuthModule,
+    UsersModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+  ],
 })
 export class AppModule {}

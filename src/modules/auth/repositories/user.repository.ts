@@ -16,7 +16,7 @@ export class UserRepository extends BaseRepository<User> {
     super(userModel);
   }
 
-  async findByEmail(email: string, select: string = 'email fullName, password') {
+  async findByEmail(email: string, select: string = 'email fullName password') {
     return super.findOne({ email }, { select });
   }
 

@@ -47,7 +47,7 @@ export class JwtService{
   
   async clearRefreshToken(userId: string): Promise<void> {
     await this.userRepository.updateById(userId, {
-      refreshTokenHash: null,
+      refreshToken: null,
       refreshTokenExpiresAt: null,
     });
   }
