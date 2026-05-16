@@ -11,4 +11,5 @@ export const AppConfiguration = (): AppConfigInterface => ({
   apiSubPath: process.env.API_SUB_PATH,
   port: +(process.env.PORT || DEFAULT_PORT),
   defaultPageSize: +(process.env.DEFAULT_PAGE_SIZE || DEFAULT_PAGE_SIZE),
+  corsOrigin: process.env.CORS_ORIGIN || '*',
 });

@@ -1,6 +1,12 @@
+import { 
+  DEV_ENVIROMENT_NAME, PROD_ENVIROMENT_NAME, QA_ENVIROMENT_NAME, 
+  UAT_ENVIROMENT_NAME 
+} from "../constants";
+
+
 export enum EviromentTypes {
-  DEVELOPMENT = 'dev',
-  UAT = 'uat',
-  QA = 'qa',
-  PRODUCTION = 'prod'
+  DEVELOPMENT = `${DEV_ENVIROMENT_NAME}`,
+  UAT = `${UAT_ENVIROMENT_NAME}`,
+  QA = `${QA_ENVIROMENT_NAME}`,
+  PRODUCTION = `${PROD_ENVIROMENT_NAME}`
 }

@@ -15,3 +15,5 @@ export const CACHE_TIME_DURATION = 300000; // 5 min in ms
 export const DEFAULT_PREFFIX_VERSION = 'v';
 
 export const DEFAULT_APP_VERSION = '1';
+
+export const DEFAULT_CORS = '*';

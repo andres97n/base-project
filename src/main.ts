@@ -4,15 +4,19 @@ import { BadRequestException, Logger, ValidationPipe, VersioningType } from '@ne
 import { DocumentBuilder } from '@nestjs/swagger/dist/document-builder';
 import { SwaggerModule } from '@nestjs/swagger';
 import { v4 as uuidv4 } from 'uuid';
+import helmet from 'helmet';
+import compression from 'compression';
 
 import { AppModule } from './app.module';
 import { 
   API_SUB_PATH, DEFAULT_APP_VERSION, 
+  DEFAULT_CORS, 
   DEFAULT_PORT, DEFAULT_PREFFIX_VERSION, 
-  EXCEPTION_VALIDATION_DEFAULT_MESSAGE 
+  EXCEPTION_VALIDATION_DEFAULT_MESSAGE, 
 } from './common/constants';
 import { ValidationExceptionFilter, AllExceptionsFilter, MongooseExceptionFilter } from './common/filters';
 import { LoggingInterceptor, ResponseInterceptor } from './common/interceptors';
+import { EviromentTypes } from './common/enums';
 
 
 async function bootstrap() {
@@ -22,7 +26,15 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('port') || DEFAULT_PORT;
   const globalPrefix = configService.get<string>('apiSubPath') || API_SUB_PATH;
-  
+  const environment = configService.get<string>('environment');
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: environment === EviromentTypes.PRODUCTION ? undefined : false,
+    }),
+  );
+  app.use(compression());
+
   app.setGlobalPrefix(globalPrefix);
   
   app.enableVersioning({
@@ -75,9 +87,11 @@ async function bootstrap() {
     const documentFactory = () => SwaggerModule.createDocument(app, config);
     SwaggerModule.setup(globalPrefix, app, documentFactory);
 
-    app.enableCors({
-      origin: '*',
-    });
+    const rawOrigin = configService.get<string>('corsOrigin') || DEFAULT_CORS;
+    const origin = rawOrigin === DEFAULT_CORS 
+      ? DEFAULT_CORS 
+      : rawOrigin.split(',').map((o) => o.trim());
+    app.enableCors({ origin });
     
     await app.listen(port);
     logger.log(`Application is running on: http://localhost:${port}/${globalPrefix}`);

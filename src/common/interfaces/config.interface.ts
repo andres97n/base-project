@@ -10,6 +10,7 @@ export interface AppConfigInterface {
   apiSubPath?: string;
   port?: number;
   defaultPageSize?: number;
+  corsOrigin?: string;
 }
 
 export interface DatabaseConfigInterface {
