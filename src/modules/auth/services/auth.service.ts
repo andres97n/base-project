@@ -70,7 +70,7 @@ export class AuthService{
     if (!refreshToken) throw new UnauthorizedException('Token not found');
     if (!refreshTokenExpiresAt || refreshTokenExpiresAt < new Date()) {
       await this.jwtService.clearRefreshToken(id);
-      throw new UnauthorizedException('Refresh token expirado en el servidor');
+      throw new UnauthorizedException('Refresh token has expired');
     }
     
     const isValid = await comparePasswordWithHashed(token, refreshToken);

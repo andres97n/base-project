@@ -106,3 +106,14 @@ Copy `.env-example` to `.env`. Required vars (validated by Joi at startup):
 ### Code style
 
 Prettier enforces single quotes and trailing commas. TypeScript strict mode is on (`strictNullChecks`). Module resolution is `nodenext` — use `.js` extensions in relative imports if needed by the compiler.
+
+## What NOT to Do
+
+- **Don't use raw SQL or direct MongoDB queries** outside of `BaseRepository` or a repository that extends it
+- **Don't add business logic to `common/`** — that folder is for shared infrastructure only
+- **Don't install new dependencies without confirming** — keep the boilerplate lean; ask before adding packages
+- **Don't use `any` in TypeScript** — use generics or proper interfaces instead
+- **Don't perform hard deletes** — always use soft delete via `state = DELETED`
+- **Don't skip Joi validation for new env vars** — add every new variable to the Joi schema in `core/config/`
+- **Don't create a controller without its corresponding DTO** — DTOs are required for validation pipes to work
+- **Don't bypass `AppException`** — never throw raw `Error` or NestJS `HttpException` directly; extend `AppException` instead

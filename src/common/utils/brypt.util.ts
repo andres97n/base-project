@@ -1,19 +1,32 @@
 import * as bcrypt from 'bcrypt';
 
+import { InternalServerException } from '../exceptions';
 
-//Involve into try and catch
+
 export const hashPassword = async (password: string): Promise<string> => {
-  const salt = await bcrypt.genSalt(10);
-  return await bcrypt.hash(password, salt);
-}
+  try {
+    const salt = await bcrypt.genSalt(10);
+    return await bcrypt.hash(password, salt);
+  } catch {
+    throw new InternalServerException('Failed to hash password');
+  }
+};
 
-export const comparePasswordWithHashed = (
-  candidatePassword: string, 
-  passwordHashed: string
+export const comparePasswordWithHashed = async (
+  candidatePassword: string,
+  passwordHashed: string,
 ): Promise<boolean> => {
-  return bcrypt.compare(candidatePassword, passwordHashed);
-}
+  try {
+    return await bcrypt.compare(candidatePassword, passwordHashed);
+  } catch {
+    throw new InternalServerException('Failed to compare password');
+  }
+};
 
 export const hashString = async (word: string): Promise<string> => {
-  return await bcrypt.hash(word, 10);
-}
+  try {
+    return await bcrypt.hash(word, 10);
+  } catch {
+    throw new InternalServerException('Failed to hash value');
+  }
+};

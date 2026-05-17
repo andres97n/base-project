@@ -111,7 +111,7 @@ export abstract class BaseRepository<T extends BaseSchema>
     options: QueryOptions = {},
   ): Promise<FlattenMaps<T>> {
     const recordUpdated = await this.model
-      .findByIdAndUpdate(
+      .findOneAndUpdate(
         filter,
         { ...data, updatedAt: new Date() },
         { ...options, new: true },
@@ -125,7 +125,7 @@ export abstract class BaseRepository<T extends BaseSchema>
 
   async remove(filter: QueryFilter<T>): Promise<boolean> {
     const recordDeleted = await this.model
-    .findByIdAndUpdate(
+    .findOneAndUpdate(
       filter,
       { state: BaseEntityStates.DELETED, updatedAt: new Date() },
       { new: true },

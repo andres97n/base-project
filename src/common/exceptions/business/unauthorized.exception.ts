@@ -13,7 +13,7 @@ export class UnauthorizedException extends AppException {
     super(
       message,
       HttpStatus.UNAUTHORIZED,
-      ExceptionAppCodes.EXCEPTION_UNHANDLED_CODE,
+      ExceptionAppCodes.EXCEPTION_UNAUTHORIZED_CODE,
       details,
       true,
     );

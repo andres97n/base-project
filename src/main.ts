@@ -1,6 +1,18 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { BadRequestException, Logger, ValidationPipe, VersioningType } from '@nestjs/common';
+
+const processLogger = new Logger('Process');
+
+process.on('uncaughtException', (error: Error) => {
+  processLogger.error('Uncaught Exception — forcing graceful shutdown', error.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason: unknown) => {
+  processLogger.error('Unhandled Promise Rejection', String(reason));
+  process.exit(1);
+});
 import { DocumentBuilder } from '@nestjs/swagger/dist/document-builder';
 import { SwaggerModule } from '@nestjs/swagger';
 import { v4 as uuidv4 } from 'uuid';

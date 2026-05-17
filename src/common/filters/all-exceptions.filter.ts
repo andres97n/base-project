@@ -31,35 +31,30 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = DEFAULT_EXCEPTION_MESSAGE;
-    let code = ExceptionAppCodes.EXCEPTION_DEFAULT_CODE;
+    let code: string = ExceptionAppCodes.EXCEPTION_DEFAULT_CODE;
     let details: Record<string, any> | undefined;
     let stack: string | undefined;
 
-    // Determinar tipo de excepción
     if (exception instanceof AppException) {
       status = exception.getStatus();
       message = exception.message;
-      code = ExceptionAppCodes[exception.code];
+      code = exception.code;
       details = exception.details;
       stack = exception.stack;
-    } 
-    
-    if (exception instanceof HttpException) {
+    } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      
+
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
       } else if (typeof exceptionResponse === 'object') {
         message = (exceptionResponse as any).message || message;
         details = exceptionResponse as Record<string, any>;
       }
-      
+
       code = getHttpExceptionCode(status);
       stack = exception.stack;
-    } 
-    
-    if (exception instanceof Error) {
+    } else if (exception instanceof Error) {
       message = exception.message;
       stack = exception.stack;
       code = ExceptionAppCodes.EXCEPTION_UNHANDLED_CODE;

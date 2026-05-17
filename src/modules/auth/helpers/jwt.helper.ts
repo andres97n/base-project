@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { UnauthorizedException } from "src/common/exceptions";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import type { StringValue } from 'ms';
@@ -27,7 +28,7 @@ export class JwtHelper {
 
   verifyToken(token: string, envSecretToken: string): Promise<JwtPayload> {
     const secret: string | null = this.configService.get<string>(envSecretToken) ?? null;
-    if (!secret) throw new BadRequestException('Invalid key token');
+    if (!secret) throw new UnauthorizedException('Invalid authentication configuration');
     
     return this.jwtService.verifyAsync<JwtPayload>(token, { secret });
   }
