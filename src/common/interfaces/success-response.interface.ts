@@ -1,18 +1,15 @@
-import { PaginatedResult } from './index';
-
-
 export interface SuccessMeta {
   total?: number;
   page?: number;
   limit?: number;
-  // [key: string]: any;
+  totalPages?: number;
 }
 
 export interface SuccessResponse<T = any> {
   ok: true;
   statusCode: number;
   message: string;
-  data: T | PaginatedResult<T>;
+  data: T | T[];
   timestamp: string;
   path: string;
   method: string;

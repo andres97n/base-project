@@ -79,10 +79,11 @@ export abstract class BaseRepository<T extends BaseSchema>
     ]);
 
     return {
-      data: data as FlattenMaps<T>[],
+      data: (data as FlattenMaps<T>[]).map(getResultWithVirtualId),
       total,
       page,
       limit,
+      totalPages: Math.ceil(total / limit),
     };
   }
 

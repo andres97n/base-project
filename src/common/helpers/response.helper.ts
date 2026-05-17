@@ -1,10 +1,18 @@
 
 
 export const getMetaDataFromResponse = (response: any) => {
+  const hasPagination =
+    response?.total != null &&
+    response?.page != null &&
+    response?.limit != null;
+
+  if (!hasPagination) return response?.meta ?? {};
+
   return {
-    ...(response?.total ? {total: response.total} : {}),
-    ...(response?.page ? {page: response.page} : {}),
-    ...(response?.limit ? {limit: response.limit} : {}),
+    total: response.total,
+    page: response.page,
+    limit: response.limit,
+    totalPages: response.totalPages ?? Math.ceil(response.total / response.limit),
     ...(response?.meta ?? {}),
-  }
-}
+  };
+};

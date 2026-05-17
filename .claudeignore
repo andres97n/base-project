@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+*.log
+*.lock
+coverage/
+.env*
+.env.*
+__pycache__/

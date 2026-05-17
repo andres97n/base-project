@@ -85,7 +85,7 @@ export abstract class BasePostgresRepository<T extends BasePostgresEntity>
       take: limit,
     });
 
-    return { data, total, page, limit };
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async updateById(

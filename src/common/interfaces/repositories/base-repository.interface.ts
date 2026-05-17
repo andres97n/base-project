@@ -8,6 +8,7 @@ export interface PaginatedResult<T> {
   total: number;
   page: number;
   limit: number;
+  totalPages: number;
 }
 
 export interface BaseRepositoryInterface<T extends BaseSchema> {

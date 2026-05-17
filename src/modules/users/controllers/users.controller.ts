@@ -3,7 +3,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Query } from '@nestjs/comm
 import { UserRoles } from 'src/modules/auth/enums';
 import { Auth } from 'src/modules/auth/decorators';
 import { UsersService } from '../services';
-import { UpdateUserRoleDto, UpdateUserStatusDto } from '../dto';
+import { FindUsersDto, UpdateUserRoleDto, UpdateUserStatusDto } from '../dto';
 
 
 @Controller('users')
@@ -12,12 +12,8 @@ export class UsersController {
 
   @Auth(UserRoles.ADMIN)
   @Get()
-  findAll(
-    @Query('search') search: string = '',
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-  ) {
-    return this.usersService.findAll(search, +page, +limit);
+  findAll(@Query() { search, page, limit }: FindUsersDto) {
+    return this.usersService.findAll(search, page, limit);
   }
 
   @Auth()
