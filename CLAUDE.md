@@ -2,20 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+!!IMPORTANT
+This project is a base project with the propuse to use as a fork repository for future projects with a strong configuration and easy use.
+
 ## Commands
 
 ```bash
-npm run start:dev     # Development with watch mode
-npm run start:prod    # Run compiled production build
-npm run build         # Compile TypeScript to dist/
+pnpm run start:dev     # Development with watch mode
+pnpm run start:prod    # Run compiled production build
+pnpm run build         # Compile TypeScript to dist/
 
-npm run lint          # ESLint with auto-fix
-npm run format        # Prettier formatting
+pnpm run lint          # ESLint with auto-fix
+pnpm run format        # Prettier formatting
 
-npm test              # Run all unit tests (*.spec.ts)
-npm run test:watch    # Unit tests in watch mode
-npm run test:cov      # Unit tests with coverage
-npm run test:e2e      # E2E tests (test/*.e2e-spec.ts)
+pnpm test              # Run all unit tests (*.spec.ts)
+pnpm run test:watch    # Unit tests in watch mode
+pnpm run test:cov      # Unit tests with coverage
+pnpm run test:e2e      # E2E tests (test/*.e2e-spec.ts)
 ```
 
 Run a single test file:

@@ -12,7 +12,7 @@ import {
   CacheConfiguration, AppConfiguration, 
   JoiValidationSchema, JwtConfiguration 
 } from './core/config';
-import { DatabaseConfiguration } from './core/config/database.config';
+import { DatabaseConfiguration, PostgresConfiguration } from './core/config/database.config';
 import { DatabaseModule } from './core/database';
 import { ThrottlerLocalModule } from './core/throttler';
 
@@ -21,9 +21,10 @@ import { ThrottlerLocalModule } from './core/throttler';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [ 
-        AppConfiguration, 
+      load: [
+        AppConfiguration,
         DatabaseConfiguration,
+        PostgresConfiguration,
         JwtConfiguration,
         CacheConfiguration
       ],

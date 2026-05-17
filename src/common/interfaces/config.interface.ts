@@ -29,3 +29,12 @@ export interface CacheConfigInterface {
   enableCache: boolean;
   cacheExpiredTime: number;
 }
+
+export interface PostgresConfigInterface {
+  postgresUri?: string;
+  postgresHost?: string;
+  postgresPort?: number;
+  postgresDb?: string;
+  postgresUser?: string;
+  postgresPassword?: string;
+}

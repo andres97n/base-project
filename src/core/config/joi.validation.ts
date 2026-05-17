@@ -2,10 +2,10 @@ import * as Joi from 'joi';
 
 import { 
   API_SUB_PATH, CACHE_TIME_DURATION, DEFAULT_CORS, 
-  DEFAULT_PAGE_SIZE, DEFAULT_PORT, JWT_REFRESH_TIME, 
+  DEFAULT_PAGE_SIZE, DEFAULT_MONGODB_PORT, JWT_REFRESH_TIME, 
   JWT_TIME
 } from 'src/common/constants';
-import { EviromentTypes } from 'src/common/enums';
+import { DatabaseEnum, EviromentTypes } from 'src/common/enums';
 
 
 export const JoiValidationSchema = Joi.object({
@@ -16,7 +16,6 @@ export const JoiValidationSchema = Joi.object({
     .valid(...Object.values(EviromentTypes))
     .default(EviromentTypes.DEVELOPMENT),
   API_SUB_PATH: Joi.string().default(API_SUB_PATH),
-  PORT: Joi.number().default(DEFAULT_PORT),
   DEFAULT_PAGE_SIZE: Joi.number().default(DEFAULT_PAGE_SIZE),
   JWT_TIME: Joi.string().default(JWT_TIME),
   JWT_REFRESH_TIME: Joi.string().default(JWT_REFRESH_TIME),
@@ -24,7 +23,21 @@ export const JoiValidationSchema = Joi.object({
   CACHE_EXPIRED_TIME: Joi.number().required().default(CACHE_TIME_DURATION),
   
   CORS_ORIGIN: Joi.string().default(DEFAULT_CORS),
-
+  
   //DATABASE
-  DB_URI: Joi.required(),
+  DB_TYPE: Joi.string().valid('mongodb', 'postgres').default('mongodb'),
+  DB_URI: Joi.when('DB_TYPE', {
+    is: DatabaseEnum.POSTGRES,
+    then: Joi.string().optional().allow(''),
+    otherwise: Joi.string().required(),
+  }),
+  PORT: Joi.number().default(DEFAULT_MONGODB_PORT),
+
+  //POSTGRES
+  POSTGRES_URI: Joi.string().optional().allow(''),
+  POSTGRES_HOST: Joi.string().optional().default('localhost'),
+  POSTGRES_PORT: Joi.number().optional().default(5432),
+  POSTGRES_DB: Joi.string().optional().allow(''),
+  POSTGRES_USER: Joi.string().optional().allow(''),
+  POSTGRES_PASSWORD: Joi.string().optional().allow(''),
 })

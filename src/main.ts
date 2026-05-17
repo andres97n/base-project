@@ -11,7 +11,7 @@ import { AppModule } from './app.module';
 import { 
   API_SUB_PATH, DEFAULT_APP_VERSION, 
   DEFAULT_CORS, 
-  DEFAULT_PORT, DEFAULT_PREFFIX_VERSION, 
+  DEFAULT_MONGODB_PORT, DEFAULT_PREFFIX_VERSION, 
   EXCEPTION_VALIDATION_DEFAULT_MESSAGE, 
 } from './common/constants';
 import { ValidationExceptionFilter, AllExceptionsFilter, MongooseExceptionFilter } from './common/filters';
@@ -24,7 +24,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('port') || DEFAULT_PORT;
+  const port = configService.get<number>('port') || DEFAULT_MONGODB_PORT;
   const globalPrefix = configService.get<string>('apiSubPath') || API_SUB_PATH;
   const environment = configService.get<string>('environment');
 
