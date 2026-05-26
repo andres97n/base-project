@@ -3,7 +3,6 @@ import { HttpStatus } from '@nestjs/common';
 import { AppException } from '../index';
 import { ExceptionAppCodes } from 'src/common/enums';
 
-
 export class ResourceNotFoundException extends AppException {
   constructor(
     resourceType: string,

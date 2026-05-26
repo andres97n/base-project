@@ -5,7 +5,6 @@ import type { Cache } from 'cache-manager';
 import { SettingRepository } from '../repositories';
 import { Setting } from '../schemas';
 
-
 @Injectable()
 export class SettingService implements OnModuleInit {
   private readonly CACHE_PREFIX = 'setting:';
@@ -32,7 +31,7 @@ export class SettingService implements OnModuleInit {
 
   async get<T = any>(key: string): Promise<T | null> {
     const cacheKey = `${this.CACHE_PREFIX}${key}`;
-    
+
     const cached = await this.cacheManager.get<T>(cacheKey);
     if (cached !== undefined && cached !== null) return cached;
 
@@ -47,7 +46,7 @@ export class SettingService implements OnModuleInit {
     const updated = await this.settingRepository.update(
       { key },
       { value, description },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
 
     await this.cacheManager.del(`${this.CACHE_PREFIX}${key}`);

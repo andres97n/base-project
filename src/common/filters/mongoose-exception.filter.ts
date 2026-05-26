@@ -1,4 +1,3 @@
-
 import {
   ExceptionFilter,
   Catch,
@@ -13,9 +12,11 @@ import { MongoError } from 'mongodb';
 import { ErrorResponse } from '../interfaces';
 import { EviromentTypes, ExceptionAppCodes } from '../enums';
 import { EXCEPTION_DATABASE_DEFAULT_MESSAGE } from '../constants';
-import { 
-  getMongoResponseCastError, getMongoResponseDefaultError, 
-  getMongoResponseDuplicateKeyError, getMongoResponseMongoValidationError 
+import {
+  getMongoResponseCastError,
+  getMongoResponseDefaultError,
+  getMongoResponseDuplicateKeyError,
+  getMongoResponseMongoValidationError,
 } from '../helpers';
 
 /**
@@ -40,7 +41,12 @@ export class MongooseExceptionFilter implements ExceptionFilter {
     let details: Record<string, any> = {};
 
     if (exception instanceof MongooseError.ValidationError) {
-      ({ status, code, message, details = {} } = getMongoResponseMongoValidationError(exception));
+      ({
+        status,
+        code,
+        message,
+        details = {},
+      } = getMongoResponseMongoValidationError(exception));
 
       this.logger.warn(
         `Mongoose validation error on ${request.method} ${request.url}`,
@@ -49,25 +55,40 @@ export class MongooseExceptionFilter implements ExceptionFilter {
     }
 
     if (exception.name === 'MongoServerError' && exception.code === 11000) {
-      ({ status, code, message, details = {} } = getMongoResponseDuplicateKeyError(exception));
-      
+      ({
+        status,
+        code,
+        message,
+        details = {},
+      } = getMongoResponseDuplicateKeyError(exception));
+
       this.logger.warn(
         `Duplicate key error on ${request.method} ${request.url}`,
         JSON.stringify(details),
       );
     }
-    
+
     if (exception instanceof MongooseError.CastError) {
-      ({ status, code, message, details = {} } = getMongoResponseCastError(exception));
+      ({
+        status,
+        code,
+        message,
+        details = {},
+      } = getMongoResponseCastError(exception));
 
       this.logger.warn(
         `Cast error on ${request.method} ${request.url}`,
         JSON.stringify(details),
       );
     }
-    
+
     if (exception instanceof MongoError) {
-      ({ status, code, message, details = {} } = getMongoResponseDefaultError(exception));
+      ({
+        status,
+        code,
+        message,
+        details = {},
+      } = getMongoResponseDefaultError(exception));
 
       this.logger.error(
         `MongoDB error on ${request.method} ${request.url}`,
@@ -86,7 +107,9 @@ export class MongooseExceptionFilter implements ExceptionFilter {
       method: request.method,
       requestId: request.headers['x-request-id'] as string,
       details,
-      ...(process.env.NODE_ENV === EviromentTypes.DEVELOPMENT && { stack: exception.stack }),
+      ...(process.env.NODE_ENV === EviromentTypes.DEVELOPMENT && {
+        stack: exception.stack,
+      }),
     };
 
     response.status(status).json(errorResponse);

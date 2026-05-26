@@ -4,9 +4,9 @@ export const DEFAULT_PAGE_SIZE = 10;
 
 export const DEFAULT_PAGE = 1;
 
-export const JWT_TIME = "2h"; //Example
+export const JWT_TIME = '2h'; //Example
 
-export const JWT_REFRESH_TIME = "7d"; //Example
+export const JWT_REFRESH_TIME = '7d'; //Example
 
 export const CACHE_TIME_DURATION = 300000; // 5 min in ms
 

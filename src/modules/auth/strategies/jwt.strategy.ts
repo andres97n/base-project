@@ -7,10 +7,8 @@ import { JwtPayload } from '../interfaces';
 import { UserRepository } from '../repositories';
 import { CONFIG_FIELD_JWT_SECRET } from 'src/common/constants';
 
-
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-
   constructor(
     private readonly userRepository: UserRepository,
     configService: ConfigService,
@@ -25,8 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const { id } = payload;
     const user = await this.userRepository.findById(id);
 
-    if (!user)
-      throw new UnauthorizedException('Token not valid');
+    if (!user) throw new UnauthorizedException('Token not valid');
 
     if (!user.isActive)
       throw new UnauthorizedException('User is inactive, talk with an admin');

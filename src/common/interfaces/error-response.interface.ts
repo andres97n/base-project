@@ -1,5 +1,4 @@
-import { ExceptionAppCodes } from "../enums";
-
+import { ExceptionAppCodes } from '../enums';
 
 export interface ErrorResponse {
   ok: boolean;

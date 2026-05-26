@@ -1,1 +1,1 @@
-export * from "./setting.repository";
+export * from './setting.repository';

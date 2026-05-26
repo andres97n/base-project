@@ -11,9 +11,7 @@ import { Request, Response } from 'express';
 import { AppException } from '../exceptions';
 import { ErrorResponse } from '../interfaces';
 import { getHttpExceptionCode } from '../helpers';
-import { 
-  DEFAULT_EXCEPTION_MESSAGE, 
-} from '../constants';
+import { DEFAULT_EXCEPTION_MESSAGE } from '../constants';
 import { EviromentTypes, ExceptionAppCodes } from '../enums';
 
 /**
@@ -72,7 +70,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       method: request.method,
       requestId: request.headers['x-request-id'] as string,
       ...(details && { details }),
-      ...(process.env.NODE_ENV === EviromentTypes.DEVELOPMENT && stack && { stack }),
+      ...(process.env.NODE_ENV === EviromentTypes.DEVELOPMENT &&
+        stack && { stack }),
     };
 
     // Severity Log Type
@@ -91,5 +90,4 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     response.status(status).json(errorResponse);
   }
-
 }

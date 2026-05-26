@@ -4,7 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { DatabaseEnum, EviromentTypes } from 'src/common/enums';
 
-
 @Global()
 @Module({
   imports: [
@@ -12,8 +11,12 @@ import { DatabaseEnum, EviromentTypes } from 'src/common/enums';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const isProd = configService.get<string>('environment') === EviromentTypes.PRODUCTION;
-        const isDev = configService.get<string>('environment') === EviromentTypes.DEVELOPMENT;
+        const isProd =
+          configService.get<string>('environment') ===
+          EviromentTypes.PRODUCTION;
+        const isDev =
+          configService.get<string>('environment') ===
+          EviromentTypes.DEVELOPMENT;
         const postgresUri = configService.get<string>('postgresUri');
 
         return {

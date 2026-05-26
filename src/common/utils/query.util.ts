@@ -1,6 +1,5 @@
 import { FlattenMaps, ObjectId } from 'mongoose';
 
-
 type LeanWithMongoId<T> = FlattenMaps<T> & { _id?: ObjectId };
 
 export const getResultWithVirtualId = <T>(

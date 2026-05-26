@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { UserRepository } from 'src/modules/auth/repositories';
 import { UpdateUserRoleDto, UpdateUserStatusDto } from '../dto';
 
-
 @Injectable()
 export class UsersService {
   constructor(private readonly userRepository: UserRepository) {}

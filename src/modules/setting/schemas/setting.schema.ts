@@ -3,35 +3,33 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from 'src/common/entities';
 
-
 export type SettingDocument = Setting & Document;
 
-
 @Schema()
-export class Setting extends BaseSchema{
-  @Prop({ 
-    required: true, 
+export class Setting extends BaseSchema {
+  @Prop({
+    required: true,
     unique: true,
-    type: String 
+    type: String,
   })
   key: string;
 
-  @Prop({ 
+  @Prop({
     required: true,
-    type: MongooseSchema.Types.Mixed 
+    type: MongooseSchema.Types.Mixed,
   })
   value: any;
 
   @Prop({
     required: false,
-    type: String 
+    type: String,
   })
   description?: string;
 
   @Prop({
     required: false,
-    type: Boolean ,
-    default: false
+    type: Boolean,
+    default: false,
   })
   isInitialSetting?: boolean;
 }

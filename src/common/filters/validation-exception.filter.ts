@@ -9,9 +9,9 @@ import { Request, Response } from 'express';
 
 import { ValidationErrorResponse, ValidationError } from '../interfaces';
 import { formatValidationErrors } from '../helpers';
-import { 
-  DEFAULT_BAD_REQUEST, 
-  EXCEPTION_VALIDATION_DEFAULT_DETAIL_MESSAGE 
+import {
+  DEFAULT_BAD_REQUEST,
+  EXCEPTION_VALIDATION_DEFAULT_DETAIL_MESSAGE,
 } from '../constants';
 import { ExceptionAppCodes } from '../enums';
 

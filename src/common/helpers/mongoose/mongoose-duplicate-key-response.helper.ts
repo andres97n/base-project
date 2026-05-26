@@ -1,11 +1,10 @@
-import { HttpStatus } from "@nestjs/common";
+import { HttpStatus } from '@nestjs/common';
 
-import { ExceptionAppCodes, UserSameFieldMessages } from "src/common/enums";
-import { ErrorResponseHelper } from "src/common/interfaces";
-
+import { ExceptionAppCodes, UserSameFieldMessages } from 'src/common/enums';
+import { ErrorResponseHelper } from 'src/common/interfaces';
 
 export const getMongoResponseDuplicateKeyError = (
-  exception: any
+  exception: any,
 ): ErrorResponseHelper => {
   const field = Object.keys(exception.keyValue)[0];
   const value = exception.keyValue[field];
@@ -22,6 +21,6 @@ export const getMongoResponseDuplicateKeyError = (
       //   field === 'email'
       //     ? 'Try login or restore your password'
       //     : 'Please set another email',
-    }
-  }
+    },
+  };
 };

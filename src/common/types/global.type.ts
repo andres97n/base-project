@@ -1,5 +1,4 @@
-import { FlattenMaps, Types } from "mongoose";
-
+import { FlattenMaps, Types } from 'mongoose';
 
 export type LocalFlattlenMaps<T> = FlattenMaps<T> & {
   _id: Types.ObjectId;

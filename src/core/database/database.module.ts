@@ -6,9 +6,7 @@ import { Setting, SettingSchema } from 'src/modules/setting/schemas';
 import { PostgresDatabaseModule } from './postgres-database.module';
 import { DatabaseEnum } from 'src/common/enums';
 
-
 const isPostgres = () => process.env.DB_TYPE === DatabaseEnum.POSTGRES;
-
 
 @Global()
 @Module({
@@ -22,10 +20,12 @@ const isPostgres = () => process.env.DB_TYPE === DatabaseEnum.POSTGRES;
               uri: configService.get<string>('dbUri'),
             }),
           }),
-          MongooseModule.forFeature([{
-            name: Setting.name,
-            schema: SettingSchema,
-          }]),
+          MongooseModule.forFeature([
+            {
+              name: Setting.name,
+              schema: SettingSchema,
+            },
+          ]),
         ]
       : []),
 

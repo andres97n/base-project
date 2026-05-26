@@ -2,27 +2,26 @@ import { Prop, Schema } from '@nestjs/mongoose';
 
 import { BaseEntityStates } from '../enums';
 
-
-@Schema({ 
+@Schema({
   timestamps: true,
-  toJSON: { 
+  toJSON: {
     virtuals: true,
     versionKey: false,
-    transform: function(doc, ret: any) {
+    transform: function (doc, ret: any) {
       ret.id = ret._id.toString();
       delete ret._id;
       return ret;
-    }
+    },
   },
   toObject: {
     virtuals: true,
     versionKey: false,
-    transform: function(doc, ret: any) {
+    transform: function (doc, ret: any) {
       ret.id = ret._id.toString();
       delete ret._id;
       return ret;
-    }
-  }, 
+    },
+  },
 })
 export class BaseSchema {
   id!: string;
@@ -30,9 +29,14 @@ export class BaseSchema {
   @Prop({
     type: String,
     required: false,
-    default: BaseEntityStates.ACTIVE, 
+    default: BaseEntityStates.ACTIVE,
     enum: Object.values(BaseEntityStates),
   })
   state: string;
 
+  @Prop({ type: String, required: false })
+  createdBy?: string;
+
+  @Prop({ type: String, required: false })
+  updatedBy?: string;
 }

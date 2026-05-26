@@ -7,7 +7,6 @@ import {
 
 import { BaseEntityStates } from '../enums';
 
-
 export abstract class BasePostgresEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -26,4 +25,10 @@ export abstract class BasePostgresEntity {
 
   @UpdateDateColumn({ type: 'timestamp with time zone' })
   updatedAt: Date;
+
+  @Column({ type: 'uuid', nullable: true })
+  createdBy?: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  updatedBy?: string;
 }

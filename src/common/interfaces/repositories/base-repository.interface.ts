@@ -1,7 +1,14 @@
-import { FlattenMaps, QueryFilter, QueryOptions, UpdateQuery } from 'mongoose';
+import {
+  ClientSession,
+  FlattenMaps,
+  QueryFilter,
+  QueryOptions,
+  UpdateQuery,
+} from 'mongoose';
 
 import { BaseSchema } from 'src/common/entities';
-
+import { CursorPaginationDto } from 'src/common/dto';
+import { CursorPaginatedResult } from './cursor-paginated-result.interface';
 
 export interface PaginatedResult<T> {
   data: T[];
@@ -25,13 +32,19 @@ export interface BaseRepositoryInterface<T extends BaseSchema> {
     options?: QueryOptions,
     errorMessage?: string,
   ): Promise<FlattenMaps<T>>;
-  
+
   findAll(
     filter?: QueryFilter<T>,
     page?: number,
     limit?: number,
     options?: QueryOptions,
   ): Promise<PaginatedResult<FlattenMaps<T>>>;
+
+  findAllCursor(
+    filter?: QueryFilter<T>,
+    cursorOpts?: CursorPaginationDto,
+    options?: QueryOptions,
+  ): Promise<CursorPaginatedResult<FlattenMaps<T>>>;
 
   update(
     filter: QueryFilter<T>,
@@ -48,4 +61,6 @@ export interface BaseRepositoryInterface<T extends BaseSchema> {
   remove(filter: QueryFilter<T>): Promise<boolean>;
 
   removeById(id: string): Promise<boolean>;
+
+  withTransaction<R>(fn: (session: ClientSession) => Promise<R>): Promise<R>;
 }

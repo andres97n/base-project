@@ -19,6 +19,8 @@ pnpm test              # Run all unit tests (*.spec.ts)
 pnpm run test:watch    # Unit tests in watch mode
 pnpm run test:cov      # Unit tests with coverage
 pnpm run test:e2e      # E2E tests (test/*.e2e-spec.ts)
+
+pnpm run seed          # Seed initial admin user (requires SEED_ADMIN_* env vars)
 ```
 
 Run a single test file:
@@ -102,6 +104,10 @@ Copy `.env-example` to `.env`. Required vars (validated by Joi at startup):
 - Global prefix: `/<API_SUB_PATH>` (e.g., `/api`)
 - URI versioning: `/v1`, `/v2`, etc.
 - Swagger UI: `http://localhost:<PORT>/api`
+
+### Transactions (MongoDB)
+
+`BaseRepository.withTransaction(fn)` wraps a callback in a Mongoose `ClientSession`. **MongoDB transactions require a replica set** — a standalone `mongod` instance will throw `Transaction numbers are only allowed on a replica member or mongos`. For local development, use MongoDB Atlas or start mongod with `--replSet rs0`.
 
 ### Code style
 

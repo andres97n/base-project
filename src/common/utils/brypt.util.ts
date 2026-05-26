@@ -2,7 +2,6 @@ import * as bcrypt from 'bcrypt';
 
 import { InternalServerException } from '../exceptions';
 
-
 export const hashPassword = async (password: string): Promise<string> => {
   try {
     const salt = await bcrypt.genSalt(10);

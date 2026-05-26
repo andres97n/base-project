@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NestInterceptor,
@@ -15,11 +14,11 @@ import { SuccessResponse } from '../interfaces';
 import { RAW_RESPONSE_KEY, RESPONSE_DEFAULT_MESSAGE } from '../constants';
 import { getMetaDataFromResponse } from '../helpers';
 
-
 @Injectable()
-export class ResponseInterceptor<T>
-  implements NestInterceptor<T, T | SuccessResponse<T>>
-{
+export class ResponseInterceptor<T> implements NestInterceptor<
+  T,
+  T | SuccessResponse<T>
+> {
   constructor(private readonly reflector: Reflector) {}
 
   intercept(
@@ -32,7 +31,7 @@ export class ResponseInterceptor<T>
     );
 
     if (rawResponse) return next.handle();
-    
+
     const httpCtx = context.switchToHttp();
     const response = httpCtx.getResponse<Response>();
     const request = httpCtx.getRequest<Request>();

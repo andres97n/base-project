@@ -2,7 +2,6 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 
 import { ExceptionAppCodes } from 'src/common/enums';
 
-
 /**
  * Excepción base personalizada para toda la aplicación
  * Proporciona estructura consistente para todos los errores de negocio
@@ -21,12 +20,12 @@ export class AppException extends HttpException {
     isOperational: boolean = true,
   ) {
     super(message, statusCode);
-    
+
     this.code = code;
     this.details = details;
     this.timestamp = new Date().toISOString();
     this.isOperational = isOperational;
-    
+
     Error.captureStackTrace(this, this.constructor);
   }
 }

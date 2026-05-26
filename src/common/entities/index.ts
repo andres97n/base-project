@@ -1,2 +1,2 @@
-export * from "./base.entity";
-export * from "./base-postgres.entity";
+export * from './base.entity';
+export * from './base-postgres.entity';

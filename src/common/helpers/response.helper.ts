@@ -1,5 +1,3 @@
-
-
 export const getMetaDataFromResponse = (response: any) => {
   const hasPagination =
     response?.total != null &&
@@ -12,7 +10,8 @@ export const getMetaDataFromResponse = (response: any) => {
     total: response.total,
     page: response.page,
     limit: response.limit,
-    totalPages: response.totalPages ?? Math.ceil(response.total / response.limit),
+    totalPages:
+      response.totalPages ?? Math.ceil(response.total / response.limit),
     ...(response?.meta ?? {}),
   };
 };

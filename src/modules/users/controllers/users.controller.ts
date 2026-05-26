@@ -1,10 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Patch, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common';
 
 import { UserRoles } from 'src/modules/auth/enums';
 import { Auth } from 'src/modules/auth/decorators';
 import { UsersService } from '../services';
 import { FindUsersDto, UpdateUserRoleDto, UpdateUserStatusDto } from '../dto';
-
 
 @Controller('users')
 export class UsersController {
