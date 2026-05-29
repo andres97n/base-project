@@ -22,8 +22,6 @@ process.on('unhandledRejection', (reason: unknown) => {
   process.exit(1);
 });
 
-import { DocumentBuilder } from '@nestjs/swagger/dist/document-builder';
-import { SwaggerModule } from '@nestjs/swagger';
 import { Logger as PinoLogger } from 'nestjs-pino';
 import { v4 as uuidv4 } from 'uuid';
 import helmet from 'helmet';
@@ -45,6 +43,7 @@ import {
 } from './common/filters';
 import { ResponseInterceptor } from './common/interceptors';
 import { EviromentTypes } from './common/enums';
+import { setupSwagger } from './core/swagger';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -109,13 +108,7 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ResponseInterceptor(reflector));
 
-  const config = new DocumentBuilder()
-    .setTitle('New Base Project')
-    .setDescription('Full Config Project')
-    .setVersion('1.0')
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(globalPrefix, app, documentFactory);
+  setupSwagger(app, globalPrefix);
 
   const rawOrigin = configService.get<string>('corsOrigin') || DEFAULT_CORS;
   const origin =
