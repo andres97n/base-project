@@ -1,0 +1,7 @@
+export const HTTP_DEFAULT_TIMEOUT = 5000;
+
+export const HTTP_DEFAULT_MAX_REDIRECTS = 5;
+
+export const HTTP_DEFAULT_RETRY_ATTEMPTS = 3;
+
+export const HTTP_DEFAULT_RETRY_BASE_DELAY = 300;

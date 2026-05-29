@@ -1,8 +1,11 @@
-import { 
-  LOG_DEBUG_LABEL, LOG_ERROR_LABEL, LOG_FATAL_LABEL, 
-  LOG_INFO_LABEL, LOG_TRACE_LABEL, LOG_WARN_LABEL 
-} from "../constants/log.constant";
-
+import {
+  LOG_DEBUG_LABEL,
+  LOG_ERROR_LABEL,
+  LOG_FATAL_LABEL,
+  LOG_INFO_LABEL,
+  LOG_TRACE_LABEL,
+  LOG_WARN_LABEL,
+} from '../constants/log.constant';
 
 export enum LogEnum {
   FATAL_LOG = `${LOG_FATAL_LABEL}`,

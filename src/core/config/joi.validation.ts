@@ -6,11 +6,14 @@ import {
   DEFAULT_CORS,
   DEFAULT_PAGE_SIZE,
   DEFAULT_MONGODB_PORT,
+  HTTP_DEFAULT_MAX_REDIRECTS,
+  HTTP_DEFAULT_RETRY_ATTEMPTS,
+  HTTP_DEFAULT_RETRY_BASE_DELAY,
+  HTTP_DEFAULT_TIMEOUT,
   JWT_REFRESH_TIME,
   JWT_TIME,
 } from 'src/common/constants';
 import { DatabaseEnum, EviromentTypes, LogEnum } from 'src/common/enums';
-
 
 export const JoiValidationSchema = Joi.object({
   JWT_SECRET: Joi.string().required(),
@@ -24,6 +27,12 @@ export const JoiValidationSchema = Joi.object({
   JWT_REFRESH_TIME: Joi.string().default(JWT_REFRESH_TIME),
   ENABLE_CACHE: Joi.boolean().default(true),
   CACHE_EXPIRED_TIME: Joi.number().required().default(CACHE_TIME_DURATION),
+
+  // HTTP client (outbound external API calls)
+  HTTP_TIMEOUT: Joi.number().default(HTTP_DEFAULT_TIMEOUT),
+  HTTP_MAX_REDIRECTS: Joi.number().default(HTTP_DEFAULT_MAX_REDIRECTS),
+  HTTP_RETRY_ATTEMPTS: Joi.number().default(HTTP_DEFAULT_RETRY_ATTEMPTS),
+  HTTP_RETRY_BASE_DELAY: Joi.number().default(HTTP_DEFAULT_RETRY_BASE_DELAY),
 
   CORS_ORIGIN: Joi.string().default(DEFAULT_CORS),
   LOG_LEVEL: Joi.string()

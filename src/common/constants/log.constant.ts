@@ -1,5 +1,3 @@
-
-
 export const LOG_FATAL_LABEL = 'fatal';
 export const LOG_ERROR_LABEL = 'error';
 export const LOG_WARN_LABEL = 'warn';

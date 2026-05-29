@@ -32,6 +32,13 @@ export interface CacheConfigInterface {
   cacheExpiredTime: number;
 }
 
+export interface HttpConfigInterface {
+  httpTimeout: number;
+  httpMaxRedirects: number;
+  httpRetryAttempts: number;
+  httpRetryBaseDelay: number;
+}
+
 export interface PostgresConfigInterface {
   postgresUri?: string;
   postgresHost?: string;

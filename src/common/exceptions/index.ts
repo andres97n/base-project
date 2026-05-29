@@ -5,3 +5,5 @@ export * from './business/unauthorized.exception';
 export * from './business/forbidden.exception';
 export * from './business/conflict.exception';
 export * from './business/internal-server.exception';
+export * from './business/bad-gateway.exception';
+export * from './business/service-unavailable.exception';

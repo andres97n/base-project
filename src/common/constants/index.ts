@@ -6,3 +6,4 @@ export * from './config.constant';
 export * from './enviroment.constant';
 export * from './database.constant';
 export * from './log.constant';
+export * from './http.constant';
