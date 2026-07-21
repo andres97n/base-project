@@ -94,11 +94,23 @@ Reference: `src/modules/auth/entities/user.entity.ts`.
 
 `src/modules/setting/` is the reference for a small, fully-wired **cached** feature module — schema → repository → service (with a `SettingModule`-owned `MongooseModule.forFeature`, cache-preload on boot, and an admin-only controller). Its schema (`setting.schema.ts`) is the minimal example: `unique: true` on `key`, `MongooseSchema.Types.Mixed` for `value`, and a `SettingDocument = Setting & Document` type alias — a convention `user.entity.ts` does not follow. Neither schema declares compound indexes via `schema.index(...)`.
 
+## Caching (settings module)
+
+`SettingService` (`src/modules/setting/services/setting.service.ts`) is the reference for a cache-backed service:
+
+- `get<T>(key)` — read-through: checks the cache first, falls back to `SettingRepository.findOne({ key })` on a miss, backfills the cache, returns `null` if the key doesn't exist (never throws).
+- `set(key, value, description?)` — upserts via `SettingRepository.update({ key }, ..., { upsert: true })`, then invalidates and re-populates the cache key.
+- `delete(key)` — removes the record (soft delete) and evicts the cache key.
+- Keys are prefixed `setting:<key>` (`CACHE_PREFIX`).
+- `onModuleInit` preloads every record where `isInitialSetting: true` into the cache on boot.
+- The cache manager is injected with `@Optional() @Inject(CACHE_MANAGER)` — every cache call is guarded with `?.`, so the service still works (just uncached) when `ENABLE_CACHE=false` and `CacheModule` isn't registered at all.
+
 ## Local databases (Docker)
 
 `docker-compose.yaml` at the repo root starts `postgres:16-alpine` (port 5432, volume `pg_data`) and `mongo:7-jammy` (port 27017, volume `mongo_data`) for local development. See Known Gaps below before relying on it for Postgres.
 
 ## Known Gaps
 
+- **No migration infrastructure exists for Postgres.** `postgres-database.module.ts` configures TypeORM with `synchronize: !isProd` — schema sync only, no `DataSource`, no `migrations/` folder, no typeorm CLI scripts in `package.json`. Under `DB_TYPE=postgres` in production (`synchronize: false`), there is **no path at all** to apply schema changes. Any real deployment on Postgres needs a migration workflow added before going to production. See `docs/plans/roadmap.md`.
 - `docker-compose.yaml` references `${DB_USER}`, `${DB_PASS}`, `${DB_NAME}`, none of which exist in `.env`/`.env-example` (the app uses `POSTGRES_USER`/`POSTGRES_PASSWORD`/`POSTGRES_DB`). `docker compose up postgres` currently starts with empty credentials.
 - The setting module is Mongoose-only (its `MongooseModule.forFeature` assumes a Mongo connection exists). Importing `SettingModule` while `DB_TYPE=postgres` will fail to resolve at bootstrap — there is no Postgres-backed `Setting` entity/repository yet.

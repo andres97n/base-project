@@ -26,7 +26,7 @@ Persistence is dual-driver: the same repository contract runs on **MongoDB (Mong
 
 **Operations**
 - Joi-validated environment config — the app refuses to boot on a bad `.env`
-- `GET /health` readiness probe via `@nestjs/terminus`; idempotent admin seed script
+- `GET /api/v1/health` readiness probe via `@nestjs/terminus`; idempotent admin seed script
 - `HttpClientService` for outbound calls: retry with backoff, and axios errors mapped into `AppException`
 
 ## Requirements
@@ -46,9 +46,7 @@ cp .env-example .env
 ```
 
 > [!IMPORTANT]
-> Two things in `.env-example` will stop your first boot:
-> - `CACHE_EXPIRED_TIME=300_000` — underscore separators are **not** valid in dotenv files, and Joi rejects the value. Change it to `300000`.
-> - `DB_URI` ships with a placeholder prefix. Set a real connection string, e.g. `mongodb://localhost:27017/base`.
+> `.env-example`'s `DB_URI` ships with a placeholder prefix — set a real connection string, e.g. `mongodb://localhost:27017/base`, before starting the app.
 >
 > Also set `JWT_SECRET` and `JWT_REFRESH_SECRET` to two **different** values — both are required.
 
@@ -165,7 +163,7 @@ Errors share one shape across all filters: `{ ok: false, statusCode, code, messa
 | `POST /auth/check-status` | Validate an access token |
 | `POST /auth/logout` | Clear the stored refresh token |
 
-`GET /health` returns the Terminus readiness payload (200, or 503 when the database ping fails).
+`GET /api/v1/health` returns the Terminus readiness payload (200, or 503 when the database ping fails).
 
 Full detail in [docs/api.md](./docs/api.md).
 
@@ -209,6 +207,7 @@ Each doc under `docs/` ends with a **Known Gaps** section listing verified defec
 | [docs/architecture.md](./docs/architecture.md) | Bootstrap sequence, global modules, config, exceptions, filters, interceptors, logging, seeding |
 | [docs/database.md](./docs/database.md) | Driver selection, repository API, pagination, soft delete, transactions, schema conventions |
 | [docs/api.md](./docs/api.md) | Route shape, response envelopes, auth flow, DTO and Swagger conventions |
+| [docs/plans/](./docs/plans/) | Accumulated investigation notes and the deferred-work roadmap |
 
 ## License
 

@@ -19,7 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Request context | `nestjs-cls` (audit stamping) |
 | Config | `@nestjs/config` + Joi schema validation |
 | API docs | `@nestjs/swagger` |
-| Health checks | `@nestjs/terminus` (`GET /health`) |
+| Health checks | `@nestjs/terminus` (`GET /api/v1/health`) |
 
 ## Commands
 
@@ -70,16 +70,16 @@ Full detail: [docs/architecture.md](./docs/architecture.md), [docs/database.md](
 - `ValidationPipe` runs with `whitelist: true, forbidNonWhitelisted: true, transform: true` — every input needs a DTO.
 - Secrets never get logged: pino redacts `req.headers.authorization` and `req.body.password`; keep that list updated for new sensitive fields.
 - Hash passwords via `src/common/utils/brypt.util.ts` — never call `bcrypt` directly.
-- Any new env var must be added to the Joi schema in `src/core/config/joi.validation.ts`, or it's silently stripped.
-- Before committing: `pnpm run lint && pnpm run format && pnpm test`.
+- Any new env var must be added to the Joi schema (`src/core/config/joi.validation.ts`) or it's silently stripped. Before committing: `pnpm run lint && pnpm run format && pnpm test`.
 
 ## Specific Documentation
 
 - [docs/architecture.md](./docs/architecture.md) — bootstrap sequence, global modules, full env var table, exception/filter/interceptor wiring, CLS audit flow, logging, rate limiting, outbound HTTP, seeding, testing setup.
 - [docs/database.md](./docs/database.md) — driver selection, `BaseRepository`/`BasePostgresRepository` method reference, offset vs cursor pagination, soft delete, transactions, schema conventions.
 - [docs/api.md](./docs/api.md) — route shape, success/error envelopes, auth flow, DTO conventions, Swagger decorators.
+- [docs/plans/](./docs/plans/) — investigation notes and the deferred-work roadmap.
 
-Each doc ends with a **Known Gaps** section listing verified defects in the current code — read it before treating that area as a reliable pattern to copy.
+Each doc ends with a **Known Gaps** section — read it before treating that area as a pattern to copy.
 
 ## Code Style
 

@@ -72,6 +72,29 @@ Endpoints (`auth.controller.ts`), all returning a flat payload (the envelope's `
 
 Refresh tokens are bcrypt-hashed and persisted on the user document with `refreshTokenExpiresAt`; refreshing rotates the stored hash. Access tokens are signed with `JWT_SECRET`/`JWT_TIME` and verified against that same secret (including by `check-status`); refresh tokens are signed and verified with `JWT_REFRESH_SECRET`/`JWT_REFRESH_TIME` — always two distinct secrets, selected via `JwtService.getPayloadAndVerifyToken(token, secretKey)`.
 
+## Users endpoints
+
+Module: `src/modules/users/`. Reuses `UserRepository` exported from `AuthModule` — no repository of its own.
+
+| Route | Access | Purpose |
+|---|---|---|
+| `GET /users` | `@Auth(ADMIN)` | Paginated list, `?search&page&limit` |
+| `GET /users/:id` | `@Auth()` (any authenticated user) | Fetch one user |
+| `PATCH /users/:id/roles` | `@Auth(ADMIN)` | Replace a user's roles |
+| `PATCH /users/:id/status` | `@Auth(ADMIN)` | Toggle `isActive` |
+| `DELETE /users/:id` | `@Auth(ADMIN)` | Soft delete |
+
+## Settings endpoints
+
+Module: `src/modules/setting/`. Class-level `@Auth(UserRoles.ADMIN)` — every route requires an admin token.
+
+| Route | Purpose |
+|---|---|
+| `GET /settings/:key` | Read a setting (cache-first, `null` if missing) |
+| `POST /settings` | Create/upsert a setting from `{ key, value, description? }` |
+| `PATCH /settings/:key` | Update `value`/`description` |
+| `DELETE /settings/:key` | Delete a setting and evict it from cache |
+
 ## DTOs and validation
 
 Every controller method that accepts a body/query needs a DTO — the global `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true })` strips/rejects anything without one. Pagination query DTOs: `PaginationDto` / `CursorPaginationDto` (see [database.md](./database.md#pagination)).
@@ -106,8 +129,8 @@ Global `ThrottlerGuard` with three tiers (`short` 10/s, `medium` 60/min, `long` 
 
 ## Health check
 
-`GET /health` (`src/modules/health/`) — `@Public()`, `@RawResponse()` (Terminus' own payload is returned as-is, not wrapped). Backed by `@nestjs/terminus`; pings the active database (`MongooseHealthIndicator` or `TypeOrmHealthIndicator`, selected on `DB_TYPE` the same way `DatabaseModule` does). Returns 200 with a per-indicator status, or 503 if the check fails.
+`GET /api/v1/health` (`src/modules/health/`) — subject to the same global prefix and versioning as every other route, despite the module name. `@Public()`, `@RawResponse()` (Terminus' own payload is returned as-is, not wrapped). Backed by `@nestjs/terminus`; pings the active database (`MongooseHealthIndicator` or `TypeOrmHealthIndicator`, selected on `DB_TYPE` the same way `DatabaseModule` does). Returns 200 with a per-indicator status, or 503 if the check fails.
 
 ## Known Gaps
 
-- None outstanding for the auth response contract as of this round — see `docs/architecture.md#known-gaps` and `docs/database.md#known-gaps` for what's still open elsewhere.
+Nothing specific to this document — see `docs/architecture.md#known-gaps` and `docs/database.md#known-gaps` for what's still open across the project.

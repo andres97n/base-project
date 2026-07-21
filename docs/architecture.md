@@ -35,7 +35,9 @@ Order matters — this is the exact chain:
 13. `app.enableCors({ origin })` — `CORS_ORIGIN` is `*` or a comma-separated allowlist.
 14. `app.listen(port)`.
 
-## Global modules (`src/app.module.ts`)
+## Modules imported in `src/app.module.ts`
+
+Full inventory, in import order:
 
 | Module | Source | Purpose |
 |---|---|---|
@@ -46,8 +48,10 @@ Order matters — this is the exact chain:
 | `CacheModule` | `@nestjs/cache-manager` | Registered **conditionally** via `ConditionalModule.registerWhen(...)` on `ENABLE_CACHE` |
 | `ThrottlerLocalModule` | `src/core/throttler/` | Rate limiting; binds `ThrottlerGuard` as `APP_GUARD` |
 | `DatabaseModule` | `src/core/database/` | Branches on `DB_TYPE` — see [database.md](./database.md) |
+| `AuthModule` | `src/modules/auth/` | Registers `User` schema; JWT strategy/guards; exports `UserRepository` — see [api.md](./api.md#auth-flow) |
+| `UsersModule` | `src/modules/users/` | Admin user management CRUD, reuses `UserRepository` from `AuthModule` — see [api.md](./api.md) |
 | `SettingModule` | `src/modules/setting/` | Cached key/value settings; admin-only CRUD — see [database.md](./database.md#schema-conventions) |
-| `HealthModule` | `src/modules/health/` | `GET /health` via `@nestjs/terminus` — see [api.md](./api.md#health-check) |
+| `HealthModule` | `src/modules/health/` | `GET /api/v1/health` via `@nestjs/terminus` — see [api.md](./api.md#health-check) |
 
 Global providers:
 
@@ -115,11 +119,20 @@ Base: `AppException extends HttpException` (`src/common/exceptions/base/app.exce
 | `ForbiddenException` | 403 | `FORBIDDEN_ERROR` |
 | `ResourceNotFoundException` | 404 | `RESOURCE_NOT_FOUND_ERROR` |
 | `ConflictException` | 409 | `CONFLICT_ERROR` |
-| `InternalServerException` | 500 | `INTERNAL_SERVER_ERROR` (`isOperational: false`) |
+| `InternalServerException` | 500 | `INTERNAL_SERVER_ERROR_ERROR` (`isOperational: false`) |
 | `BadGatewayException` | 502 | `BAD_GATEWAY_ERROR` |
 | `ServiceUnavailableException` | 503 | `SERVICE_UNAVAILABLE_ERROR` |
 
 `ResourceNotFoundException` has a different signature from its siblings: `(resourceType, identifier, details?)`.
+
+### Adding a business exception
+
+1. Add a member to `ExceptionAppCodes` in `src/common/enums/exception.enum.ts`.
+2. Add a default-message constant to `src/common/constants/exception.constant.ts`.
+3. Create the class in `src/common/exceptions/business/`, extending `AppException` with your HTTP status and code — mirror `src/common/exceptions/business/conflict.exception.ts` for the common `(message?, details?)` shape, or `resource-not-found.exception.ts` for a custom constructor.
+4. Re-export it from `src/common/exceptions/index.ts`.
+
+Never throw a raw `Error` or NestJS `HttpException` — always extend `AppException` so the global filters and Swagger error decorators pick it up.
 
 ### Filters
 

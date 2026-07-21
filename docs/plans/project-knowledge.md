@@ -1,0 +1,39 @@
+# Project Knowledge
+
+Findings from auditing this codebase that aren't obvious from reading `docs/*.md` alone — the *why* behind decisions, and behaviors that will surprise you. See also [roadmap.md](./roadmap.md) for what's still open.
+
+## Non-obvious behaviors, verified against source
+
+- **`.lean()` has two consequences everywhere in `BaseRepository`:** the `toJSON`/`toObject` transforms on `BaseSchema` (including `_id → id`) never run — `getResultWithVirtualId()` does that mapping manually — and any Mongoose instance method defined with `schema.methods.foo` is unreachable on the returned plain object. `UserSchema.methods.comparePassword` is dead code for this reason; the real password check goes through `comparePasswordWithHashed()` instead.
+- **`DatabaseModule` is `@Global()` but exports nothing.** A `MongooseModule.forFeature(...)` registered there would not actually be visible to other modules' DI. This is *why* `SettingModule` (and every feature module) registers its own `forFeature` rather than relying on a shared one — the earlier design (Setting's schema registered centrally in `DatabaseModule`) looked like it worked but the model provider was never actually importable elsewhere.
+- **`ConditionalModule.registerWhen(CacheModule.register(...), () => CacheConfiguration().enableCache)` reads `process.env` directly**, not through `ConfigService` — `CacheConfiguration()` is called as a plain factory function at module-evaluation time, before Nest's DI container exists. Same pattern in `DatabaseModule`'s `isPostgres()` check. This is deliberate (Nest needs these decisions synchronously, before providers are available) but it means these two decisions are made from raw env vars, not from validated config — a `CACHE_EXPIRED_TIME` that fails Joi validation still gets read by `CacheConfiguration()` for the *registration* decision before the app fails to boot on validation.
+- **Swagger is mounted directly** (`SwaggerModule.setup(...)`), not as a controller, so it sits outside `app.enableVersioning()` — `/api/docs`, never `/api/v1/docs`. Every actual route, including `/health`, *does* get the version prefix. This asymmetry is easy to get wrong when writing docs (it was wrong in an earlier draft of `docs/api.md`/`README.md` — both said bare `/health`).
+- **`findByEmail`'s explicit `select: 'email fullName password isActive roles'` overrides the schema's `select: false` on `password`.** Mongoose's `select: false` is a *default projection* only — an explicit inclusion list always wins. This is intentional here (login needs the hash to compare), but the same pattern is exactly how the original password-hash leak on `/auth/register` happened: `BaseRepository.create()` returns the full created document via `.toObject()`, and `select: false` never applies to a document's own `create()`/`toObject()` result at all, only to *queries*.
+
+## Decisions made this project, with rationale
+
+- **Soft delete excluded by default, `includeDeleted` opt-in.** Every `BaseRepository`/`BasePostgresRepository` read method now merges a not-deleted filter automatically (`withNotDeleted()`). Before this, all four read methods returned soft-deleted rows unmarked, silently, unless every caller remembered to filter `state`. Opt-in via `{ includeDeleted: true }` in the options argument, stripped before it reaches the driver.
+- **`assertValidColumn()` is the real defense against SQL injection in `BasePostgresRepository.findAllCursor()`**, not the `CursorPaginationDto.sortField` regex. The regex (`^[a-zA-Z_][a-zA-Z0-9_]*$`) is a shallow first filter for the common case; the actual guarantee comes from checking every interpolated key (`sortField` and each filter key) against `this.repository.metadata.columns` and throwing `ValidationException` on anything that isn't a real column. Don't remove the repository-level check even if the DTO looks sufficient — cursor filters can come from places other than the DTO.
+- **Auth responses standardized to a flat shape with `accessToken`/`refreshToken`.** Previously `register`/`logout` wrapped in `{ data, message }` while `login`/`refresh` returned flat, and `login`/`createUser` used the key `token` while `refresh` used `accessToken`. All four now return flat objects and let `ResponseInterceptor` supply the envelope — `toAuthResponse()` in `src/modules/auth/helpers/user.helper.ts` is the single place that shape is built, so it can't drift per-endpoint again.
+- **`SettingService`'s cache manager is `@Optional() @Inject(CACHE_MANAGER)`, not required.** `CacheModule` is registered conditionally on `ENABLE_CACHE`; a required injection would crash the whole app at bootstrap the moment someone sets `ENABLE_CACHE=false`. Every cache call in the service uses `?.` so the service degrades to "no caching" rather than failing.
+- **`checkStatusToken` was verifying access tokens against the *refresh* secret** (`JwtService.getPayloadAndVerifyToken` hardcoded `CONFIG_FIELD_JWT_SECRET_REFRESH`). Fixed by adding a `secretKey` parameter defaulting to the refresh secret (so `renewUserToken`'s call site needed no change) — `checkStatusToken` now passes `CONFIG_FIELD_JWT_SECRET` explicitly.
+- **Login now rejects `isActive: false` users** (it previously didn't check at all), and `findByEmail`'s projection was widened to include `isActive`/`roles` so the check and the response DTO both have the data they need.
+
+## Module map
+
+| Path | Owns | Reference for |
+|---|---|---|
+| `src/common/` | Repositories, exceptions, filters, interceptors, decorators, DTOs, entities, utils — infra only, no business logic | Base classes every feature extends |
+| `src/core/` | Global infra modules: config, database (driver switch), logger, cls, http, throttler, swagger | — |
+| `src/modules/auth/` | User schema, JWT strategy/guards, register/login/refresh/check-status/logout | Full-featured module with its own decorators/guards |
+| `src/modules/users/` | Admin CRUD over users, **no repository of its own** — reuses `UserRepository` exported from `AuthModule` | Simplest complete feature module to copy |
+| `src/modules/setting/` | Cached key/value settings, admin-only CRUD | Feature module with a cache layer |
+| `src/modules/health/` | `GET /api/v1/health`, driver-aware (`HealthController` vs `HealthPostgresController` picked in `HealthModule` by `DB_TYPE`) | Pattern for driver-conditional wiring |
+| `src/seed/` | One-shot admin seed via `NestFactory.createApplicationContext` | — |
+
+## Traps for a new contributor
+
+- **The lint baseline is ~129 pre-existing errors**, almost entirely `@typescript-eslint/no-unsafe-*` in `src/modules/auth/decorators/*`, `src/modules/auth/guards/user-role.guard.ts`, `src/modules/auth/strategies/jwt.strategy.ts`, `src/main.ts`'s request-id middleware, and `src/core/logger/logger.module.ts`. These are **not regressions from this session's work** — verify against this number before assuming a change broke something (`pnpm run lint` and compare the total).
+- **`docker-compose.yaml`'s `postgres` service reads `${DB_USER}/${DB_PASS}/${DB_NAME}`**, which the app never uses (it reads `POSTGRES_USER`/`POSTGRES_PASSWORD`/`POSTGRES_DB`). `docker compose up postgres` currently starts with empty credentials. The `mongodb` service has no such issue.
+- **`SettingModule` is unconditionally imported and Mongoose-only.** Under `DB_TYPE=postgres` it will fail to resolve at bootstrap (`MongooseModule.forFeature` with no Mongo connection registered). `HealthModule` shows the pattern to fix this (branch the controller/provider on `DB_TYPE`) but `SettingModule` hasn't been updated to match yet.
+- **`test/app.e2e-spec.ts` is untouched NestJS scaffold** asserting `GET /` → `'Hello World!'`. It cannot pass: no root controller, a global prefix, versioning, and a global auth guard all apply. `test/jest-e2e.json` also has no `moduleNameMapper`, so any real e2e spec importing `src/...` paths will fail to resolve regardless.
