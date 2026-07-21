@@ -2,8 +2,24 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-!!IMPORTANT
-This project is a base project with the propuse to use as a fork repository for future projects with a strong configuration and easy use.
+**This is a base/boilerplate project**, forked as the starting point for future projects. Keep it lean, generic, and strongly configured — avoid adding product-specific logic here.
+
+## Stack
+
+| | |
+|---|---|
+| Framework | NestJS 11, TypeScript 5.7 (strict, `nodenext`) |
+| Package manager | pnpm (not npm/yarn) |
+| Persistence | Mongoose 9 **or** TypeORM 0.3/Postgres, switched via `DB_TYPE` |
+| Auth | Passport JWT, access + refresh tokens |
+| Validation | class-validator / class-transformer, global `ValidationPipe` |
+| Caching | `@nestjs/cache-manager`, conditional on `ENABLE_CACHE` |
+| Rate limiting | `@nestjs/throttler`, 3 global tiers |
+| Logging | `nestjs-pino` |
+| Request context | `nestjs-cls` (audit stamping) |
+| Config | `@nestjs/config` + Joi schema validation |
+| API docs | `@nestjs/swagger` |
+| Health checks | `@nestjs/terminus` (`GET /health`) |
 
 ## Commands
 
@@ -11,115 +27,74 @@ This project is a base project with the propuse to use as a fork repository for 
 pnpm run start:dev     # Development with watch mode
 pnpm run start:prod    # Run compiled production build
 pnpm run build         # Compile TypeScript to dist/
-
 pnpm run lint          # ESLint with auto-fix
 pnpm run format        # Prettier formatting
-
 pnpm test              # Run all unit tests (*.spec.ts)
 pnpm run test:watch    # Unit tests in watch mode
 pnpm run test:cov      # Unit tests with coverage
 pnpm run test:e2e      # E2E tests (test/*.e2e-spec.ts)
-
 pnpm run seed          # Seed initial admin user (requires SEED_ADMIN_* env vars)
 ```
 
 Run a single test file:
 ```bash
-npx jest src/auth/auth.service.spec.ts
+npx jest src/modules/auth/services/auth.service.spec.ts
 ```
 
-## Architecture
-
-NestJS REST API with MongoDB (Mongoose), JWT auth, caching, rate limiting, and Swagger docs.
-
-### Module layout
+## Architecture Rules
 
 ```
 src/
-├── main.ts              # Bootstrap: versioning, pipes, filters, interceptors, Swagger
-├── app.module.ts        # Root: config, DB, cache, throttler, HttpModule, AuthModule
-├── auth/                # Auth scaffold (not fully implemented)
-├── common/              # Shared infrastructure (no business logic)
-│   ├── constants/       # API paths, port, JWT defaults, cache TTL
-│   ├── decorators/      # @RawResponse() — skips response wrapping
-│   ├── entities/        # BaseSchema (timestamps, soft-delete state, virtual id)
-│   ├── enums/           # EnvironmentTypes, ExceptionAppCodes, BaseEntityStates
-│   ├── exceptions/      # AppException base + business exceptions (401/403/404/422)
-│   ├── filters/         # AllExceptions → Mongoose → Validation (applied in this order)
-│   ├── helpers/         # Response/exception formatting, Mongoose error parsers
-│   ├── interceptors/    # LoggingInterceptor, ResponseInterceptor (global)
-│   ├── interfaces/      # ApiResponse union, ISuccessResponse, IErrorResponse
-│   ├── repositories/    # BaseRepository<T> — generic Mongoose CRUD
-│   └── utils/           # bcrypt, string, query utilities
-├── core/
-│   ├── config/          # app/database/jwt/cache configs + Joi env validation
-│   ├── database/        # Global DatabaseModule (Mongoose)
-│   └── throttler/       # Rate limiting module
-└── modules/
-    └── settings/        # Example feature module: schema → repository → service
+├── main.ts        # Bootstrap only — no business logic
+├── app.module.ts  # Composition root
+├── common/         # Shared infrastructure — NO business logic
+├── core/           # Global config modules (config, database, logger, cls, http, throttler, swagger)
+└── modules/        # Feature modules (auth, users, ...)
 ```
 
-### Key patterns
+- `common/` never imports from `modules/`. Dependency direction is one-way.
+- Every repository extends `BaseRepository<T>` (Mongoose) or `BasePostgresRepository<T>` (Postgres) — never query `Model`/`Repository` directly outside one.
+- Every schema/entity extends `BaseSchema` or `BasePostgresEntity` — soft delete only (`state = 'D'`), no hard deletes in the base classes.
+- Every thrown error extends `AppException` (`src/common/exceptions/base/app.exception.ts`).
+- Successful responses are auto-wrapped by the global `ResponseInterceptor`; opt out with `@RawResponse()`.
+- Routes resolve as `/<API_SUB_PATH>/v<n>/...` (URI versioning, default `v1`).
+- All routes are **authenticated by default** (global `JwtAuthGuard`); `@Public()` opens one, `@Auth(...roles)` adds RBAC.
 
-**BaseRepository** (`src/common/repositories/base.repository.ts`) — extend this for every feature repository. Provides `create`, `findById`, `findOne`, `findAll` (paginated), `updateById`, `update`, `removeById`, `remove`. All returns are `FlattenMaps<T>`.
+**New feature module:** `src/modules/<feature>/` with `schemas/`, `repositories/` (extends the base repository), `services/`, `controllers/`, `dto/`, and a `<feature>.module.ts` that registers the schema via `MongooseModule.forFeature` (or the TypeORM equivalent) — then import that module in `app.module.ts`. A feature is not wired up until its module is imported. Mirror `src/modules/setting/` (cached CRUD feature) or `src/modules/users/` (simple CRUD feature) as reference wiring.
 
-**BaseSchema** (`src/common/entities/base.entity.ts`) — all Mongoose schemas extend this. Adds `createdAt`/`updatedAt`, virtual `id` (maps `_id`), and `state` (ACTIVE/DELETED). Soft deletes only — `removeById`/`remove` set `state = DELETED`.
+Full detail: [docs/architecture.md](./docs/architecture.md), [docs/database.md](./docs/database.md), [docs/api.md](./docs/api.md).
 
-**AppException** (`src/common/exceptions/base/app.exception.ts`) — base for all thrown errors. Business exceptions (Unauthorized, Forbidden, ResourceNotFound, Validation) extend it and carry an `ExceptionAppCode`, `timestamp`, and optional `details`.
+## Quality and Security
 
-**ResponseInterceptor** wraps every successful response:
-```json
-{ "ok": true, "statusCode": 200, "message": "...", "data": ..., "timestamp": "...", "path": "...", "method": "...", "requestId": "uuid", "meta": { "total": 0, "page": 1, "limit": 10 } }
-```
-Use `@RawResponse()` on a controller method to bypass wrapping.
+- Never bypass the global `JwtAuthGuard`/`ThrottlerGuard`/`ValidationPipe` — they're process-wide, not per-route opt-in.
+- `ValidationPipe` runs with `whitelist: true, forbidNonWhitelisted: true, transform: true` — every input needs a DTO.
+- Secrets never get logged: pino redacts `req.headers.authorization` and `req.body.password`; keep that list updated for new sensitive fields.
+- Hash passwords via `src/common/utils/brypt.util.ts` — never call `bcrypt` directly.
+- Any new env var must be added to the Joi schema in `src/core/config/joi.validation.ts`, or it's silently stripped.
+- Before committing: `pnpm run lint && pnpm run format && pnpm test`.
 
-**Three global exception filters** are applied in order in `main.ts`: `AllExceptionsFilter` → `MongooseExceptionFilter` → `ValidationExceptionFilter`. NestJS applies them last-registered-first, so `ValidationExceptionFilter` catches first.
+## Specific Documentation
 
-**Settings caching** (`src/modules/settings/`) is the reference implementation for feature modules with a cache layer — preloads on init, uses key prefix `setting:${key}`, invalidates on update.
+- [docs/architecture.md](./docs/architecture.md) — bootstrap sequence, global modules, full env var table, exception/filter/interceptor wiring, CLS audit flow, logging, rate limiting, outbound HTTP, seeding, testing setup.
+- [docs/database.md](./docs/database.md) — driver selection, `BaseRepository`/`BasePostgresRepository` method reference, offset vs cursor pagination, soft delete, transactions, schema conventions.
+- [docs/api.md](./docs/api.md) — route shape, success/error envelopes, auth flow, DTO conventions, Swagger decorators.
 
-### Adding a feature module
+Each doc ends with a **Known Gaps** section listing verified defects in the current code — read it before treating that area as a reliable pattern to copy.
 
-1. Create `src/modules/<feature>/` with `schema`, `repository` (extends `BaseRepository`), `service`, `controller`, `module`, and `dto/` subdirectory.
-2. Schema class extends `BaseSchema`; decorate with `@Schema({ timestamps: true })`.
-3. Register schema in the feature module via `MongooseModule.forFeature`.
-4. Import the feature module in `app.module.ts`.
+## Code Style
 
-### Environment variables
-
-Copy `.env-example` to `.env`. Required vars (validated by Joi at startup):
-
-| Variable | Default |
-|---|---|
-| `DB_URI` | — (required) |
-| `JWT_SECRET` | — (required) |
-| `JWT_REFRESH_SECRET` | — (required) |
-| `NODE_ENV` | `dev` |
-| `PORT` | `3000` |
-| `API_SUB_PATH` | `api` |
-| `ENABLE_CACHE` | `true` |
-| `CACHE_EXPIRED_TIME` | `300000` |
-
-### API structure
-
-- Global prefix: `/<API_SUB_PATH>` (e.g., `/api`)
-- URI versioning: `/v1`, `/v2`, etc.
-- Swagger UI: `http://localhost:<PORT>/api`
-
-### Transactions (MongoDB)
-
-`BaseRepository.withTransaction(fn)` wraps a callback in a Mongoose `ClientSession`. **MongoDB transactions require a replica set** — a standalone `mongod` instance will throw `Transaction numbers are only allowed on a replica member or mongos`. For local development, use MongoDB Atlas or start mongod with `--replSet rs0`.
-
-### Code style
-
-Prettier enforces single quotes and trailing commas. TypeScript strict mode is on (`strictNullChecks`). Module resolution is `nodenext` — use `.js` extensions in relative imports if needed by the compiler.
+Prettier enforces single quotes and trailing commas. TypeScript strict mode is on (`strictNullChecks`). Module resolution is `nodenext`. There is **no `@/` path alias** — imports use `src/...` absolute specifiers, resolved via `baseUrl` in `tsconfig.json`.
 
 ## What NOT to Do
 
-- **Don't use raw SQL or direct MongoDB queries** outside of `BaseRepository` or a repository that extends it
+- **Don't use raw SQL or direct MongoDB/Postgres queries** outside of `BaseRepository`/`BasePostgresRepository` or a repository that extends one
 - **Don't add business logic to `common/`** — that folder is for shared infrastructure only
 - **Don't install new dependencies without confirming** — keep the boilerplate lean; ask before adding packages
 - **Don't use `any` in TypeScript** — use generics or proper interfaces instead
-- **Don't perform hard deletes** — always use soft delete via `state = DELETED`
+- **Don't perform hard deletes** — always use soft delete via `state = 'D'`
 - **Don't skip Joi validation for new env vars** — add every new variable to the Joi schema in `core/config/`
 - **Don't create a controller without its corresponding DTO** — DTOs are required for validation pipes to work
 - **Don't bypass `AppException`** — never throw raw `Error` or NestJS `HttpException` directly; extend `AppException` instead
+- **Don't hand-roll a response envelope** — return data as-is and let the global `ResponseInterceptor` wrap it; use `@RawResponse()` only when the envelope genuinely doesn't apply
+- **Don't create a feature folder without a `.module.ts` that's imported in `app.module.ts`** — an unregistered module's providers can't be injected anywhere
+- **Don't assume MongoDB** — check `DB_TYPE` and use the matching base class (Mongoose vs Postgres)

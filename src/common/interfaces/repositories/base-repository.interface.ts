@@ -18,18 +18,20 @@ export interface PaginatedResult<T> {
   totalPages: number;
 }
 
+export type FindOptions = QueryOptions & { includeDeleted?: boolean };
+
 export interface BaseRepositoryInterface<T extends BaseSchema> {
   create(data: Partial<T>): Promise<FlattenMaps<T>>;
 
   findById(
     id: string,
-    options?: QueryOptions,
+    options?: FindOptions,
     errorMessage?: string,
   ): Promise<FlattenMaps<T>>;
 
   findOne(
     filter: QueryFilter<T>,
-    options?: QueryOptions,
+    options?: FindOptions,
     errorMessage?: string,
   ): Promise<FlattenMaps<T>>;
 
@@ -37,13 +39,13 @@ export interface BaseRepositoryInterface<T extends BaseSchema> {
     filter?: QueryFilter<T>,
     page?: number,
     limit?: number,
-    options?: QueryOptions,
+    options?: FindOptions,
   ): Promise<PaginatedResult<FlattenMaps<T>>>;
 
   findAllCursor(
     filter?: QueryFilter<T>,
     cursorOpts?: CursorPaginationDto,
-    options?: QueryOptions,
+    options?: FindOptions,
   ): Promise<CursorPaginatedResult<FlattenMaps<T>>>;
 
   update(

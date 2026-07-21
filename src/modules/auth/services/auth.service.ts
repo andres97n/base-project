@@ -3,9 +3,11 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from './jwt.service';
 import { comparePasswordWithHashed } from 'src/common/utils';
 import { UnauthorizedException } from 'src/common/exceptions';
+import { CONFIG_FIELD_JWT_SECRET } from 'src/common/constants';
 import { CheckStatusTokenDto, CreateUserDto, LoginUserDto } from '../dto';
 import { JwtPayload } from '../interfaces';
 import { UserRepository } from '../repositories';
+import { toAuthResponse } from '../helpers';
 
 @Injectable()
 export class AuthService {
@@ -17,20 +19,11 @@ export class AuthService {
   async createUser(createUserDto: CreateUserDto) {
     const newUser = await this.userRepository.create(createUserDto);
 
-    const { accessToken, refreshToken } = await this.jwtService.generateTokens(
+    const tokens = await this.jwtService.generateTokens(
       this.jwtService.getJwtPayload(newUser.id),
     );
 
-    const data = {
-      ...newUser,
-      token: accessToken,
-      refreshToken,
-    };
-
-    return {
-      data,
-      message: 'User created successfully',
-    };
+    return toAuthResponse(newUser, tokens);
   }
 
   async login(loginUserDto: LoginUserDto) {
@@ -44,16 +37,14 @@ export class AuthService {
     if (!(await comparePasswordWithHashed(password, user.password)))
       throw new UnauthorizedException('Credentials are not valid (password)');
 
-    const { accessToken, refreshToken } = await this.jwtService.generateTokens(
+    if (!user.isActive)
+      throw new UnauthorizedException('User account is inactive');
+
+    const tokens = await this.jwtService.generateTokens(
       this.jwtService.getJwtPayload(user.id),
     );
 
-    const { password: _password, ...userWithoutPassword } = user;
-    return {
-      ...userWithoutPassword,
-      token: accessToken,
-      refreshToken,
-    };
+    return toAuthResponse(user, tokens);
   }
 
   async renewUserToken(token: string) {
@@ -80,17 +71,18 @@ export class AuthService {
     );
   }
 
-  async checkStatusToken({ token }: CheckStatusTokenDto): Promise<boolean> {
-    const payload: JwtPayload =
-      await this.jwtService.getPayloadAndVerifyToken(token);
-    return !!payload;
+  async checkStatusToken({
+    token,
+  }: CheckStatusTokenDto): Promise<{ valid: boolean }> {
+    await this.jwtService.getPayloadAndVerifyToken(
+      token,
+      CONFIG_FIELD_JWT_SECRET,
+    );
+    return { valid: true };
   }
 
-  async logout(userId: string): Promise<Record<string, any>> {
+  async logout(userId: string): Promise<{ id: string }> {
     await this.jwtService.clearRefreshToken(userId);
-    return {
-      data: { id: userId },
-      message: 'Come back soon!!',
-    };
+    return { id: userId };
   }
 }

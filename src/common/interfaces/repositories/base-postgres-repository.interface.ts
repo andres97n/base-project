@@ -11,18 +11,26 @@ import { CursorPaginationDto } from 'src/common/dto';
 import { PaginatedResult } from './base-repository.interface';
 import { CursorPaginatedResult } from './cursor-paginated-result.interface';
 
+export type FindOneOptionsWithDeleted<T> = FindOneOptions<T> & {
+  includeDeleted?: boolean;
+};
+
+export type FindManyOptionsWithDeleted<T> = FindManyOptions<T> & {
+  includeDeleted?: boolean;
+};
+
 export interface BasePostgresRepositoryInterface<T extends BasePostgresEntity> {
   create(data: DeepPartial<T>): Promise<T>;
 
   findById(
     id: string,
-    options?: FindOneOptions<T>,
+    options?: FindOneOptionsWithDeleted<T>,
     errorMessage?: string,
   ): Promise<T>;
 
   findOne(
     filter: FindOptionsWhere<T>,
-    options?: FindOneOptions<T>,
+    options?: FindOneOptionsWithDeleted<T>,
     errorMessage?: string,
   ): Promise<T>;
 
@@ -30,13 +38,13 @@ export interface BasePostgresRepositoryInterface<T extends BasePostgresEntity> {
     filter?: FindOptionsWhere<T>,
     page?: number,
     limit?: number,
-    options?: FindManyOptions<T>,
+    options?: FindManyOptionsWithDeleted<T>,
   ): Promise<PaginatedResult<T>>;
 
   findAllCursor(
     filter?: FindOptionsWhere<T>,
     cursorOpts?: CursorPaginationDto,
-    options?: FindManyOptions<T>,
+    options?: FindManyOptionsWithDeleted<T>,
   ): Promise<CursorPaginatedResult<T>>;
 
   updateById(

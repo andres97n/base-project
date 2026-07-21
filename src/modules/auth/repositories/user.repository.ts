@@ -17,7 +17,10 @@ export class UserRepository extends BaseRepository<User> {
     super(userModel, auditContext);
   }
 
-  async findByEmail(email: string, select: string = 'email fullName password') {
+  async findByEmail(
+    email: string,
+    select: string = 'email fullName password isActive roles',
+  ) {
     return super.findOne({ email }, { select });
   }
 
@@ -28,13 +31,13 @@ export class UserRepository extends BaseRepository<User> {
   ): Promise<PaginatedResult<User>> {
     const filter = {
       $or: [
-        { name: { $regex: search, $options: 'i' } },
+        { fullName: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
       ],
     };
 
     return super.findAll(filter, page, limit, {
-      select: 'name email isActive createdAt',
+      select: 'fullName email isActive createdAt',
     });
   }
 }

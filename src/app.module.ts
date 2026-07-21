@@ -5,6 +5,8 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { SettingModule } from './modules/setting/setting.module';
+import { HealthModule } from './modules/health/health.module';
 import { JwtAuthGuard } from './modules/auth/guards';
 import {
   CacheConfiguration,
@@ -55,6 +57,8 @@ import { AuditInterceptor } from './common/interceptors';
     DatabaseModule,
     AuthModule,
     UsersModule,
+    SettingModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [

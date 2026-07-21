@@ -2,18 +2,20 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   DeepPartial,
   EntityManager,
-  FindManyOptions,
   FindOneOptions,
   FindOptionsOrder,
   FindOptionsWhere,
+  Not,
   Repository,
 } from 'typeorm';
 
 import { DEFAULT_NOT_FOUND_MESSAGE } from '../constants';
-import { ResourceNotFoundException } from '../exceptions';
+import { ResourceNotFoundException, ValidationException } from '../exceptions';
 import {
   BasePostgresRepositoryInterface,
   CursorPaginatedResult,
+  FindManyOptionsWithDeleted,
+  FindOneOptionsWithDeleted,
   PaginatedResult,
 } from '../interfaces';
 import { BaseEntityStates } from '../enums';
@@ -47,15 +49,19 @@ export abstract class BasePostgresRepository<
 
   async findById(
     id: string,
-    options: FindOneOptions<T> = {},
+    options: FindOneOptionsWithDeleted<T> = {},
     errorMessage: string = DEFAULT_NOT_FOUND_MESSAGE,
   ): Promise<T> {
-    const where = {
-      ...((options.where as object) ?? {}),
-      id,
-    } as FindOptionsWhere<T>;
+    const { includeDeleted, ...restOptions } = options;
+    const where = this.withNotDeleted(
+      {
+        ...((restOptions.where as object) ?? {}),
+        id,
+      } as FindOptionsWhere<T>,
+      includeDeleted,
+    );
 
-    const record = await this.repository.findOne({ ...options, where });
+    const record = await this.repository.findOne({ ...restOptions, where });
 
     this.validateNotFoundRecord(record, errorMessage, id);
     return record as T;
@@ -63,15 +69,19 @@ export abstract class BasePostgresRepository<
 
   async findOne(
     filter: FindOptionsWhere<T>,
-    options: FindOneOptions<T> = {},
+    options: FindOneOptionsWithDeleted<T> = {},
     errorMessage: string = DEFAULT_NOT_FOUND_MESSAGE,
   ): Promise<T> {
-    const where = {
-      ...((options.where as object) ?? {}),
-      ...filter,
-    };
+    const { includeDeleted, ...restOptions } = options;
+    const where = this.withNotDeleted(
+      {
+        ...((restOptions.where as object) ?? {}),
+        ...filter,
+      },
+      includeDeleted,
+    );
 
-    const record = await this.repository.findOne({ ...options, where });
+    const record = await this.repository.findOne({ ...restOptions, where });
 
     this.validateNotFoundRecord(record, errorMessage);
     return record as T;
@@ -81,21 +91,25 @@ export abstract class BasePostgresRepository<
     filter: FindOptionsWhere<T> = {} as FindOptionsWhere<T>,
     page = 1,
     limit = 10,
-    options: FindManyOptions<T> = {},
+    options: FindManyOptionsWithDeleted<T> = {},
   ): Promise<PaginatedResult<T>> {
+    const { includeDeleted, ...restOptions } = options;
     const skip = (page - 1) * limit;
 
-    const where = {
-      ...((options.where as object) ?? {}),
-      ...filter,
-    };
+    const where = this.withNotDeleted(
+      {
+        ...((restOptions.where as object) ?? {}),
+        ...filter,
+      },
+      includeDeleted,
+    );
 
     const defaultOrder = { createdAt: 'DESC' } as FindOptionsOrder<T>;
 
     const [data, total] = await this.repository.findAndCount({
-      ...options,
+      ...restOptions,
       where,
-      order: options.order ?? defaultOrder,
+      order: restOptions.order ?? defaultOrder,
       skip,
       take: limit,
     });
@@ -106,23 +120,33 @@ export abstract class BasePostgresRepository<
   async findAllCursor(
     filter: FindOptionsWhere<T> = {} as FindOptionsWhere<T>,
     cursorOpts: CursorPaginationDto = new CursorPaginationDto(),
-    options: FindManyOptions<T> = {},
+    options: FindManyOptionsWithDeleted<T> = {},
   ): Promise<CursorPaginatedResult<T>> {
+    const { includeDeleted, ...restOptions } = options;
     const { cursor, limit, sortField, sortOrder } = cursorOpts;
     const alias = 'entity';
     const op = sortOrder === 'asc' ? '>' : '<';
     const sortDir = sortOrder.toUpperCase() as 'ASC' | 'DESC';
 
+    this.assertValidColumn(sortField);
+
     const qb = this.repository.createQueryBuilder(alias);
 
     const where = {
-      ...((options.where as object) ?? {}),
+      ...((restOptions.where as object) ?? {}),
       ...(filter as object),
     } as Record<string, unknown>;
 
     Object.entries(where).forEach(([key, value]) => {
+      this.assertValidColumn(key);
       qb.andWhere(`${alias}.${key} = :${key}`, { [key]: value });
     });
+
+    if (!includeDeleted) {
+      qb.andWhere(`${alias}.state != :notDeletedState`, {
+        notDeletedState: BaseEntityStates.DELETED,
+      });
+    }
 
     if (cursor) {
       const { value, id } = decodeCursor(cursor);
@@ -211,6 +235,27 @@ export abstract class BasePostgresRepository<
     fn: (manager: EntityManager) => Promise<R>,
   ): Promise<R> {
     return this.repository.manager.transaction(fn);
+  }
+
+  protected withNotDeleted(
+    where: FindOptionsWhere<T> = {} as FindOptionsWhere<T>,
+    includeDeleted = false,
+  ): FindOptionsWhere<T> {
+    if (includeDeleted) return where;
+
+    return {
+      ...where,
+      state: Not(BaseEntityStates.DELETED),
+    } as FindOptionsWhere<T>;
+  }
+
+  protected assertValidColumn(column: string): void {
+    const validColumns = this.repository.metadata.columns.map(
+      (c) => c.propertyName,
+    );
+    if (!validColumns.includes(column)) {
+      throw new ValidationException(`Invalid sort/filter field: ${column}`);
+    }
   }
 
   private validateNotFoundRecord(

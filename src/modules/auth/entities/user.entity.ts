@@ -62,7 +62,7 @@ export class User extends BaseSchema {
     default: [UserRoles.USER],
     enum: Object.values(UserRoles),
   })
-  roles: string[];
+  roles: UserRoles[];
 
   @Prop({
     type: String,

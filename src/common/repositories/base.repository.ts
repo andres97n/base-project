@@ -13,6 +13,7 @@ import { ResourceNotFoundException } from '../exceptions';
 import {
   BaseRepositoryInterface,
   CursorPaginatedResult,
+  FindOptions,
   PaginatedResult,
 } from '../interfaces';
 import { BaseEntityStates } from '../enums';
@@ -45,10 +46,18 @@ export abstract class BaseRepository<
 
   async findById(
     id: string,
-    options: QueryOptions = {},
+    options: FindOptions = {},
     errorMessage: string = DEFAULT_NOT_FOUND_MESSAGE,
   ): Promise<FlattenMaps<T>> {
-    const record = await this.model.findById(id, null, options).lean().exec();
+    const { includeDeleted, ...queryOptions } = options;
+    const filter = this.withNotDeleted(
+      { _id: id } as QueryFilter<T>,
+      includeDeleted,
+    );
+    const record = await this.model
+      .findOne(filter, null, queryOptions)
+      .lean()
+      .exec();
 
     this.validateNotFoundRecord(record as FlattenMaps<T>, errorMessage, id);
 
@@ -57,11 +66,12 @@ export abstract class BaseRepository<
 
   async findOne(
     filter: QueryFilter<T>,
-    options: QueryOptions = {},
+    options: FindOptions = {},
     errorMessage: string = DEFAULT_NOT_FOUND_MESSAGE,
   ): Promise<FlattenMaps<T>> {
+    const { includeDeleted, ...queryOptions } = options;
     const record = await this.model
-      .findOne(filter, null, options)
+      .findOne(this.withNotDeleted(filter, includeDeleted), null, queryOptions)
       .lean()
       .exec();
 
@@ -74,15 +84,17 @@ export abstract class BaseRepository<
     filter: QueryFilter<T> = {},
     page = 1,
     limit = 10,
-    options: QueryOptions = {},
+    options: FindOptions = {},
   ): Promise<PaginatedResult<FlattenMaps<T>>> {
+    const { includeDeleted, ...queryOptions } = options;
+    const combinedFilter = this.withNotDeleted(filter, includeDeleted);
     const skip = (page - 1) * limit;
     const [total, data] = await Promise.all([
-      this.model.countDocuments(filter).exec(),
+      this.model.countDocuments(combinedFilter).exec(),
       this.model
-        .find(filter, null, {
-          ...options,
-          sort: options.sort || { createdAt: -1 },
+        .find(combinedFilter, null, {
+          ...queryOptions,
+          sort: queryOptions.sort || { createdAt: -1 },
           skip,
           limit,
         })
@@ -102,8 +114,9 @@ export abstract class BaseRepository<
   async findAllCursor(
     filter: QueryFilter<T> = {},
     cursorOpts: CursorPaginationDto = new CursorPaginationDto(),
-    options: QueryOptions = {},
+    options: FindOptions = {},
   ): Promise<CursorPaginatedResult<FlattenMaps<T>>> {
+    const { includeDeleted, ...queryOptions } = options;
     const { cursor, limit, sortField, sortOrder } = cursorOpts;
     const sortDir = sortOrder === 'asc' ? 1 : -1;
     const op = sortOrder === 'asc' ? '$gt' : '$lt';
@@ -117,11 +130,14 @@ export abstract class BaseRepository<
       ];
     }
 
-    const combinedFilter = { ...filter, ...cursorFilter } as QueryFilter<T>;
+    const combinedFilter = this.withNotDeleted(
+      { ...filter, ...cursorFilter } as QueryFilter<T>,
+      includeDeleted,
+    );
 
     const data = await this.model
       .find(combinedFilter, null, {
-        ...options,
+        ...queryOptions,
         sort: { [sortField]: sortDir, _id: sortDir },
         limit: limit + 1,
       })
@@ -236,6 +252,18 @@ export abstract class BaseRepository<
     } finally {
       await session.endSession();
     }
+  }
+
+  protected withNotDeleted(
+    filter: QueryFilter<T> = {},
+    includeDeleted = false,
+  ): QueryFilter<T> {
+    if (includeDeleted) return filter;
+
+    return {
+      ...filter,
+      state: { $ne: BaseEntityStates.DELETED },
+    } as QueryFilter<T>;
   }
 
   private getRemoveResponse(recordDeleted: FlattenMaps<T>) {

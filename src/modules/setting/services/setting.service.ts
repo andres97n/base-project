@@ -1,7 +1,8 @@
-import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
+import { Injectable, Inject, Optional, OnModuleInit } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 
+import { ResourceNotFoundException } from 'src/common/exceptions';
 import { SettingRepository } from '../repositories';
 import { Setting } from '../schemas';
 
@@ -11,7 +12,9 @@ export class SettingService implements OnModuleInit {
 
   constructor(
     private readonly settingRepository: SettingRepository,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Optional()
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager?: Cache,
   ) {}
 
   async onModuleInit() {
@@ -19,6 +22,8 @@ export class SettingService implements OnModuleInit {
   }
 
   private async preloadCache(): Promise<void> {
+    if (!this.cacheManager) return;
+
     const { data } = await this.settingRepository.getInitialSettings();
 
     for (const setting of data) {
@@ -32,14 +37,17 @@ export class SettingService implements OnModuleInit {
   async get<T = any>(key: string): Promise<T | null> {
     const cacheKey = `${this.CACHE_PREFIX}${key}`;
 
-    const cached = await this.cacheManager.get<T>(cacheKey);
+    const cached = await this.cacheManager?.get<T>(cacheKey);
     if (cached !== undefined && cached !== null) return cached;
 
-    const setting = await this.settingRepository.findOne({ key });
-    if (!setting) return null;
-
-    await this.cacheManager.set(cacheKey, setting.value);
-    return setting.value as T;
+    try {
+      const setting = await this.settingRepository.findOne({ key });
+      await this.cacheManager?.set(cacheKey, setting.value);
+      return setting.value as T;
+    } catch (error) {
+      if (error instanceof ResourceNotFoundException) return null;
+      throw error;
+    }
   }
 
   async set(key: string, value: any, description?: string): Promise<Setting> {
@@ -49,14 +57,14 @@ export class SettingService implements OnModuleInit {
       { upsert: true, new: true },
     );
 
-    await this.cacheManager.del(`${this.CACHE_PREFIX}${key}`);
-    await this.cacheManager.set(`${this.CACHE_PREFIX}${key}`, value);
+    await this.cacheManager?.del(`${this.CACHE_PREFIX}${key}`);
+    await this.cacheManager?.set(`${this.CACHE_PREFIX}${key}`, value);
 
     return updated;
   }
 
   async delete(key: string): Promise<void> {
     await this.settingRepository.remove({ key });
-    await this.cacheManager.del(`${this.CACHE_PREFIX}${key}`);
+    await this.cacheManager?.del(`${this.CACHE_PREFIX}${key}`);
   }
 }

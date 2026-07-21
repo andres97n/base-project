@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from '../services';
@@ -9,14 +9,19 @@ import {
   LoginUserDto,
   RenewTokenDto,
   TokenPairDto,
+  TokenStatusDto,
 } from '../dto';
 import { Auth, GetUser } from '../decorators';
 import { User } from '../entities';
-import { Public } from 'src/common/decorators';
-import { ApiOkResponseWrapped } from 'src/common/decorators';
+import {
+  ApiErrorResponses,
+  ApiOkResponseWrapped,
+  Public,
+} from 'src/common/decorators';
 import { SWAGGER_BEARER_AUTH_NAME } from 'src/common/constants';
 
 @ApiTags('Auth')
+@ApiErrorResponses()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -46,6 +51,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Check whether a token is still valid' })
+  @ApiOkResponseWrapped(TokenStatusDto)
   @Public()
   @Post('check-status')
   async checkStatusToken(@Body() tokenDto: CheckStatusTokenDto) {
@@ -55,7 +61,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Invalidate the current refresh token' })
   @ApiBearerAuth(SWAGGER_BEARER_AUTH_NAME)
   @Auth()
-  @Get('logout')
+  @Post('logout')
   async logout(@GetUser() user: User) {
     return this.authService.logout(user.id);
   }

@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { UserRoles } from '../enums';
 
-/** Access/refresh token pair issued by the auth endpoints. */
 export class TokenPairDto {
   @ApiProperty({
     example: 'eyJhbGciOiJIUzI1Ni...',
@@ -17,7 +16,6 @@ export class TokenPairDto {
   refreshToken: string;
 }
 
-/** User profile returned alongside freshly issued tokens (login / register). */
 export class AuthResponseDto {
   @ApiProperty({
     example: '665f1b2c9a1e4b0012a3c4d5',
@@ -49,11 +47,16 @@ export class AuthResponseDto {
     example: 'eyJhbGciOiJIUzI1Ni...',
     description: 'JWT access token.',
   })
-  token: string;
+  accessToken: string;
 
   @ApiProperty({
     example: 'eyJhbGciOiJIUzI1Ni...',
     description: 'JWT refresh token.',
   })
   refreshToken: string;
+}
+
+export class TokenStatusDto {
+  @ApiProperty({ example: true, description: 'Whether the token is valid.' })
+  valid: boolean;
 }

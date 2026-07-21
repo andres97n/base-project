@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import ms from 'ms';
 
 import { hashString } from 'src/common/utils';
+import { UnauthorizedException } from 'src/common/exceptions';
 import {
   CONFIG_FIELD_JWT_REFRESH_TIME,
   CONFIG_FIELD_JWT_SECRET_REFRESH,
@@ -52,16 +53,16 @@ export class JwtService {
     });
   }
 
-  async getPayloadAndVerifyToken(refreshToken: string): Promise<JwtPayload> {
+  async getPayloadAndVerifyToken(
+    token: string,
+    secretKey: string = CONFIG_FIELD_JWT_SECRET_REFRESH,
+  ): Promise<JwtPayload> {
     let payload: JwtPayload;
 
     try {
-      payload = await this.jwtHelper.verifyToken(
-        refreshToken,
-        CONFIG_FIELD_JWT_SECRET_REFRESH,
-      );
-    } catch (e) {
-      throw new UnauthorizedException('Invalid refresh token or expired');
+      payload = await this.jwtHelper.verifyToken(token, secretKey);
+    } catch {
+      throw new UnauthorizedException('Invalid or expired token');
     }
 
     return payload;

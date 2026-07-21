@@ -7,6 +7,8 @@ import { AuditContextService } from 'src/common/services';
 import { Setting } from '../schemas';
 import { PaginatedResult } from 'src/common/interfaces';
 
+const MAX_INITIAL_SETTINGS = 1000;
+
 @Injectable()
 export class SettingRepository extends BaseRepository<Setting> {
   constructor(
@@ -18,8 +20,6 @@ export class SettingRepository extends BaseRepository<Setting> {
   }
 
   async getInitialSettings(): Promise<PaginatedResult<FlattenMaps<Setting>>> {
-    return super.findAll({
-      isInitialSetting: true,
-    });
+    return super.findAll({ isInitialSetting: true }, 1, MAX_INITIAL_SETTINGS);
   }
 }

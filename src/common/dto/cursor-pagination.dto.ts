@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Matches,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class CursorPaginationDto {
   @IsOptional()
@@ -15,6 +23,9 @@ export class CursorPaginationDto {
 
   @IsOptional()
   @IsString()
+  @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
+    message: 'sortField must be a valid identifier',
+  })
   sortField: string = 'createdAt';
 
   @IsOptional()
