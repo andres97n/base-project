@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule as PinoLoggerModule } from 'nestjs-pino';
 
@@ -15,6 +15,7 @@ import { EviromentTypes } from 'src/common/enums';
         const isDev = env !== EviromentTypes.PRODUCTION;
 
         return {
+          forRoutes: [{ path: '{*path}', method: RequestMethod.ALL }],
           pinoHttp: {
             level,
             genReqId: (req) => req.headers['x-request-id'] as string,

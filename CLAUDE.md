@@ -85,6 +85,21 @@ Each doc ends with a **Known Gaps** section — read it before treating that are
 
 Prettier enforces single quotes and trailing commas. TypeScript strict mode is on (`strictNullChecks`). Module resolution is `nodenext`. There is **no `@/` path alias** — imports use `src/...` absolute specifiers, resolved via `baseUrl` in `tsconfig.json`.
 
+## Change Documentation
+
+Before deploying, create or update a file in `docs/plans/`
+only if the change involves architecture, security, persistence,
+external integrations, cross-cutting configuration, multi-module
+refactoring, or a decision that can be reused by future forks.
+
+The plan must include: objective, context, scope, affected files,
+steps, risks, tests, and acceptance criteria.
+
+Do not create plans for trivial, mechanical, or isolated changes.
+
+If a decision remains in effect for the base project, document the
+final outcome in `docs/decisions/`, not just in `docs/plans/`.
+
 ## What NOT to Do
 
 - **Don't use raw SQL or direct MongoDB/Postgres queries** outside of `BaseRepository`/`BasePostgresRepository` or a repository that extends one
