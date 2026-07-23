@@ -80,7 +80,7 @@ All 27 vars are validated at startup by `src/core/config/joi.validation.ts`. **A
 |---|---|---|---|---|
 | `JWT_SECRET` | string | ✅ | — | |
 | `JWT_REFRESH_SECRET` | string | ✅ | — | Must differ from `JWT_SECRET` |
-| `CACHE_EXPIRED_TIME` | number | ✅ | `300000` | `.required()` — the default never applies |
+| `CACHE_EXPIRED_TIME` | number | — | `300000` | |
 | `DB_URI` | string | conditional | — | Required unless `DB_TYPE=postgres` |
 | `DB_TYPE` | string | — | `mongodb` | `mongodb` \| `postgres` |
 | `NODE_ENV` | string | — | `dev` | `dev` \| `uat` \| `qa` \| `prod` |
@@ -99,9 +99,9 @@ All 27 vars are validated at startup by `src/core/config/joi.validation.ts`. **A
 | `POSTGRES_URI` | string | — | — | Takes precedence over discrete vars |
 | `POSTGRES_HOST` | string | — | `localhost` | |
 | `POSTGRES_PORT` | number | — | `5432` | |
-| `POSTGRES_DB` | string | — | — | |
-| `POSTGRES_USER` | string | — | — | |
-| `POSTGRES_PASSWORD` | string | — | — | |
+| `POSTGRES_DB` | string | conditional | — | Required when `DB_TYPE=postgres` and `POSTGRES_URI` is absent |
+| `POSTGRES_USER` | string | conditional | — | Required when `DB_TYPE=postgres` and `POSTGRES_URI` is absent |
+| `POSTGRES_PASSWORD` | string | conditional | — | Required when `DB_TYPE=postgres` and `POSTGRES_URI` is absent |
 | `SEED_ADMIN_EMAIL` | email | — | — | Seed skips if absent |
 | `SEED_ADMIN_PASSWORD` | string | — | — | Seed skips if absent |
 | `SEED_ADMIN_FULL_NAME` | string | — | `Admin` | |
@@ -195,16 +195,19 @@ Creates a single admin user via `createApplicationContext`. Idempotent — skips
 
 ## Testing
 
-- **Unit** — jest config is inline in `package.json`: `rootDir: src`, `testRegex: .*\.spec\.ts$`, `moduleNameMapper: { '^src/(.*)$': '<rootDir>/$1' }`. Specs must live under `src/`.
-- **E2E** — `test/jest-e2e.json`, `testRegex: .e2e-spec.ts$`.
+- **Unit** — jest config is inline in `package.json`: `rootDir: src`, `testRegex: .*\.spec\.ts$`, `moduleNameMapper: { '^src/(.*)$': '<rootDir>/$1' }`. Specs must live under `src/`. A modest `coverageThreshold` (global) is enforced as a regression ratchet — raise it as coverage grows, never lower it to make a build pass.
+- **E2E** — `test/jest-e2e.json`, `testRegex: .e2e-spec.ts$`, with its own `moduleNameMapper` so `src/...` imports resolve. `test/health.e2e-spec.ts` replicates the real bootstrap (global prefix + URI versioning) and hits the only genuinely public route, `GET /api/v1/health`. Because `AppModule` connects to the database on boot, e2e requires a running DB — `docker compose up -d mongodb` (or `postgres`, matching `DB_TYPE`) before `pnpm run test:e2e`.
 - Single file: `npx jest src/path/to/file.spec.ts`.
+
+## Graceful shutdown
+
+`src/main.ts` holds `app` in a module-scoped variable (not a local `const`) and calls `app.enableShutdownHooks()` right after `NestFactory.create(...)`, so `OnModuleDestroy`/`OnApplicationShutdown` hooks fire on SIGTERM/SIGINT and Mongoose/TypeORM connections close cleanly. The `uncaughtException`/`unhandledRejection` handlers route through a shared `handleFatalError` helper that attempts `await app?.close()` before exiting, guarded by a 5s force-exit timer so a hung close can't block the process forever.
+
+## Docker
+
+A multi-stage `Dockerfile` (deps → build → slim runtime, non-root user) builds the app image; `.dockerignore` excludes `node_modules`, `dist`, and env files. `docker-compose.yaml` provisions an `app` service alongside `postgres` and `mongodb` — `docker compose up --build` runs the full stack. There is still no CI (`.github/` does not exist) — that remains a deliberate gap, see below.
 
 ## Known Gaps
 
-- `app.enableShutdownHooks()` is never called, so `OnModuleDestroy` hooks do not run on SIGTERM. No graceful shutdown.
-- `CACHE_EXPIRED_TIME` is declared `.required().default(300000)` — in Joi, `.required()` wins, so the default is unreachable and the var is mandatory.
-- When `DB_TYPE=postgres`, none of the `POSTGRES_*` vars are required, so an empty config passes validation and fails only at connect time.
-- `test/app.e2e-spec.ts` is untouched NestJS scaffold asserting `GET /` returns `Hello World!`. It cannot pass — there is no root controller, plus a global prefix, versioning, and a global auth guard. `test/jest-e2e.json` also lacks `moduleNameMapper`, so any e2e importing `src/...` fails to resolve.
-- Only one spec exists in the whole repo (`src/core/http/helpers/axios-error.mapper.spec.ts`). No coverage threshold is configured.
-- No CI (`.github/` does not exist) and no Dockerfile for the app itself (`docker-compose.yaml` only provisions local databases).
-- Process-level handlers call `process.exit(1)` without awaiting `app.close()`.
+- No CI (`.github/` does not exist) — lint/test/build only run locally or via the Dockerfile build step.
+- The health endpoint always pings the database (`MongooseHealthIndicator`/`TypeOrmHealthIndicator`), so there is no DB-free liveness route — orchestrator liveness probes and the e2e smoke test both depend on DB availability by design.

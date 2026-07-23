@@ -1,25 +1,21 @@
+import { Request, Response, NextFunction } from 'express';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import {
   BadRequestException,
+  INestApplication,
   Logger,
   ValidationPipe,
   VersioningType,
 } from '@nestjs/common';
 
-const processLogger = new Logger('Process');
 
 process.on('uncaughtException', (error: Error) => {
-  processLogger.error(
-    'Uncaught Exception — forcing graceful shutdown',
-    error.stack,
-  );
-  process.exit(1);
+  void handleFatalError('Uncaught Exception', error.stack);
 });
 
 process.on('unhandledRejection', (reason: unknown) => {
-  processLogger.error('Unhandled Promise Rejection', String(reason));
-  process.exit(1);
+  void handleFatalError('Unhandled Promise Rejection', String(reason));
 });
 
 import { Logger as PinoLogger } from 'nestjs-pino';
@@ -44,11 +40,14 @@ import {
 import { ResponseInterceptor } from './common/interceptors';
 import { EviromentTypes } from './common/enums';
 import { setupSwagger } from './core/swagger';
+import { handleFatalError } from './core/helpers';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  let app: INestApplication | undefined;
+  app = await NestFactory.create(AppModule, { bufferLogs: true });
 
+  app.enableShutdownHooks();
   app.useLogger(app.get(PinoLogger));
 
   const configService = app.get(ConfigService);
@@ -64,9 +63,10 @@ async function bootstrap() {
   );
   app.use(compression());
 
-  app.use((req: any, res: any, next: any) => {
-    req.headers['x-request-id'] = req.headers['x-request-id'] || uuidv4();
-    res.setHeader('X-Request-ID', req.headers['x-request-id']);
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const headers = req.headers as any;
+    headers['x-request-id'] = headers['x-request-id'] || uuidv4();
+    res.setHeader('X-Request-ID', headers['x-request-id']);
     next();
   });
 

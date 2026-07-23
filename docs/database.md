@@ -107,10 +107,9 @@ Reference: `src/modules/auth/entities/user.entity.ts`.
 
 ## Local databases (Docker)
 
-`docker-compose.yaml` at the repo root starts `postgres:16-alpine` (port 5432, volume `pg_data`) and `mongo:7-jammy` (port 27017, volume `mongo_data`) for local development. See Known Gaps below before relying on it for Postgres.
+`docker-compose.yaml` at the repo root starts `postgres:16-alpine` (port 5432, volume `pg_data`), `mongo:7-jammy` (port 27017, volume `mongo_data`), and an `app` service built from the root `Dockerfile`, for local development. `docker compose up --build` runs the full stack.
 
 ## Known Gaps
 
 - **No migration infrastructure exists for Postgres.** `postgres-database.module.ts` configures TypeORM with `synchronize: !isProd` — schema sync only, no `DataSource`, no `migrations/` folder, no typeorm CLI scripts in `package.json`. Under `DB_TYPE=postgres` in production (`synchronize: false`), there is **no path at all** to apply schema changes. Any real deployment on Postgres needs a migration workflow added before going to production. See `docs/plans/roadmap.md`.
-- `docker-compose.yaml` references `${DB_USER}`, `${DB_PASS}`, `${DB_NAME}`, none of which exist in `.env`/`.env-example` (the app uses `POSTGRES_USER`/`POSTGRES_PASSWORD`/`POSTGRES_DB`). `docker compose up postgres` currently starts with empty credentials.
 - The setting module is Mongoose-only (its `MongooseModule.forFeature` assumes a Mongo connection exists). Importing `SettingModule` while `DB_TYPE=postgres` will fail to resolve at bootstrap — there is no Postgres-backed `Setting` entity/repository yet.

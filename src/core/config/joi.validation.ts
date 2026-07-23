@@ -15,6 +15,16 @@ import {
 } from 'src/common/constants';
 import { DatabaseEnum, EviromentTypes, LogEnum } from 'src/common/enums';
 
+const requiredWhenPostgresWithoutUri = Joi.when('DB_TYPE', {
+  is: DatabaseEnum.POSTGRES,
+  then: Joi.when('POSTGRES_URI', {
+    is: Joi.string().min(1).required(),
+    then: Joi.string().optional().allow(''),
+    otherwise: Joi.string().min(1).required(),
+  }),
+  otherwise: Joi.string().optional().allow(''),
+});
+
 export const JoiValidationSchema = Joi.object({
   JWT_SECRET: Joi.string().required(),
   JWT_REFRESH_SECRET: Joi.string().required(),
@@ -26,7 +36,7 @@ export const JoiValidationSchema = Joi.object({
   JWT_TIME: Joi.string().default(JWT_TIME),
   JWT_REFRESH_TIME: Joi.string().default(JWT_REFRESH_TIME),
   ENABLE_CACHE: Joi.boolean().default(true),
-  CACHE_EXPIRED_TIME: Joi.number().required().default(CACHE_TIME_DURATION),
+  CACHE_EXPIRED_TIME: Joi.number().default(CACHE_TIME_DURATION),
 
   // HTTP client (outbound external API calls)
   HTTP_TIMEOUT: Joi.number().default(HTTP_DEFAULT_TIMEOUT),
@@ -59,7 +69,7 @@ export const JoiValidationSchema = Joi.object({
   POSTGRES_URI: Joi.string().optional().allow(''),
   POSTGRES_HOST: Joi.string().optional().default('localhost'),
   POSTGRES_PORT: Joi.number().optional().default(5432),
-  POSTGRES_DB: Joi.string().optional().allow(''),
-  POSTGRES_USER: Joi.string().optional().allow(''),
-  POSTGRES_PASSWORD: Joi.string().optional().allow(''),
+  POSTGRES_DB: requiredWhenPostgresWithoutUri,
+  POSTGRES_USER: requiredWhenPostgresWithoutUri,
+  POSTGRES_PASSWORD: requiredWhenPostgresWithoutUri,
 });
