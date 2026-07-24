@@ -24,9 +24,13 @@ Nice to have; not urgent for a boilerplate whose purpose is being forked and ext
 
 - Replace `test/app.e2e-spec.ts` with a real e2e spec (or delete it) and add `moduleNameMapper` to `test/jest-e2e.json` so `src/...` imports resolve.
 - Add a `coverageThreshold` to the jest config once there's more than one spec file to enforce it against.
-- Add a CI workflow (`.github/workflows/`) running `pnpm run lint && pnpm run build && pnpm test` at minimum.
+- ~~Add a CI workflow (`.github/workflows/`)~~ **Done** — `.github/workflows/ci.yml` runs the pnpm quality gate (`lint:ci`/`typecheck`/`test`/`build` + report-only `audit`) plus a MongoDB-backed e2e job. See [../decisions/0004-maintenance-and-release-policy.md](../decisions/0004-maintenance-and-release-policy.md).
 - Add an application `Dockerfile` — `docker-compose.yaml` currently only provisions local databases, not the app itself.
-- Burn down the ~129-error lint baseline (see `project-knowledge.md#traps-for-a-new-contributor`), concentrated in `src/modules/auth/decorators/*`, `user-role.guard.ts`, `jwt.strategy.ts`, `main.ts`, and `logger.module.ts`.
+- Burn down the ~129-error lint baseline (see `project-knowledge.md#traps-for-a-new-contributor`), concentrated in `src/modules/auth/decorators/*`, `user-role.guard.ts`, `jwt.strategy.ts`, `main.ts`, and `logger.module.ts`. **Now blocks CI** — the `lint:ci` gate step runs without `--fix`; until the baseline is cleared, that step may need to stay non-blocking (see ADR 0004).
+
+## Release & dependency governance
+
+Delivered in [../decisions/0004-maintenance-and-release-policy.md](../decisions/0004-maintenance-and-release-policy.md): semver release model (v1.0.0), `DEPENDENCY-POLICY.md`, `UPGRADE.md`, `SUPPORT.md`, `SECURITY.md`, root `ARCHITECTURE.md`, CI, and Renovate. Follow-ups: burn down the lint baseline so `lint:ci` can be a hard gate; create a `release/v1` branch only when a v2 exists.
 
 ## Explicitly out of scope
 

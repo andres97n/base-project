@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Non-blocking until the ~124-error pre-existing lint baseline is burned down
+      # (see docs/plans/roadmap.md and ADR 0004). Flip to blocking by removing
+      # continue-on-error once the baseline is clear.
+      - name: Lint
+        run: pnpm run lint:ci
+        continue-on-error: true
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm run build
+
+      # Report-only: pnpm audit is noisy and must not block the gate.
+      - name: Audit (runtime deps, non-blocking)
+        run: pnpm audit --prod
+        continue-on-error: true
+
+  e2e:
+    name: E2E (with MongoDB)
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # AppModule connects to the DB on boot; the health e2e hits GET /api/v1/health.
+      - name: E2E tests
+        run: pnpm run test:e2e
+        env:
+          NODE_ENV: dev
+          DB_TYPE: mongo
+          DB_URI: mongodb://localhost:27017/base-project-e2e
