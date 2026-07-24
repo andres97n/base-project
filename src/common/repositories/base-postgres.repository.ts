@@ -88,7 +88,7 @@ export abstract class BasePostgresRepository<
   }
 
   async findAll(
-    filter: FindOptionsWhere<T> = {} as FindOptionsWhere<T>,
+    filter: FindOptionsWhere<T> = {},
     page = 1,
     limit = 10,
     options: FindManyOptionsWithDeleted<T> = {},
@@ -118,7 +118,7 @@ export abstract class BasePostgresRepository<
   }
 
   async findAllCursor(
-    filter: FindOptionsWhere<T> = {} as FindOptionsWhere<T>,
+    filter: FindOptionsWhere<T> = {},
     cursorOpts: CursorPaginationDto = new CursorPaginationDto(),
     options: FindManyOptionsWithDeleted<T> = {},
   ): Promise<CursorPaginatedResult<T>> {
@@ -188,7 +188,7 @@ export abstract class BasePostgresRepository<
     const merged = this.repository.merge(record, {
       ...data,
       ...auditData,
-    } as DeepPartial<T>);
+    });
     return this.repository.save(merged);
   }
 
@@ -203,7 +203,7 @@ export abstract class BasePostgresRepository<
     const merged = this.repository.merge(record, {
       ...data,
       ...auditData,
-    } as DeepPartial<T>);
+    });
     return this.repository.save(merged);
   }
 
@@ -238,7 +238,7 @@ export abstract class BasePostgresRepository<
   }
 
   protected withNotDeleted(
-    where: FindOptionsWhere<T> = {} as FindOptionsWhere<T>,
+    where: FindOptionsWhere<T> = {},
     includeDeleted = false,
   ): FindOptionsWhere<T> {
     if (includeDeleted) return where;
@@ -246,7 +246,7 @@ export abstract class BasePostgresRepository<
     return {
       ...where,
       state: Not(BaseEntityStates.DELETED),
-    } as FindOptionsWhere<T>;
+    };
   }
 
   protected assertValidColumn(column: string): void {

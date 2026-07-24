@@ -50,10 +50,7 @@ export abstract class BaseRepository<
     errorMessage: string = DEFAULT_NOT_FOUND_MESSAGE,
   ): Promise<FlattenMaps<T>> {
     const { includeDeleted, ...queryOptions } = options;
-    const filter = this.withNotDeleted(
-      { _id: id } as QueryFilter<T>,
-      includeDeleted,
-    );
+    const filter = this.withNotDeleted({ _id: id }, includeDeleted);
     const record = await this.model
       .findOne(filter, null, queryOptions)
       .lean()
@@ -131,7 +128,7 @@ export abstract class BaseRepository<
     }
 
     const combinedFilter = this.withNotDeleted(
-      { ...filter, ...cursorFilter } as QueryFilter<T>,
+      { ...filter, ...cursorFilter },
       includeDeleted,
     );
 
@@ -263,7 +260,7 @@ export abstract class BaseRepository<
     return {
       ...filter,
       state: { $ne: BaseEntityStates.DELETED },
-    } as QueryFilter<T>;
+    };
   }
 
   private getRemoveResponse(recordDeleted: FlattenMaps<T>) {

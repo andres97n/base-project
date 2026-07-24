@@ -77,13 +77,14 @@ Full detail: [docs/architecture.md](./docs/architecture.md), [docs/database.md](
 - [docs/architecture.md](./docs/architecture.md) — bootstrap sequence, global modules, full env var table, exception/filter/interceptor wiring, CLS audit flow, logging, rate limiting, outbound HTTP, seeding, testing setup.
 - [docs/database.md](./docs/database.md) — driver selection, `BaseRepository`/`BasePostgresRepository` method reference, offset vs cursor pagination, soft delete, transactions, schema conventions.
 - [docs/api.md](./docs/api.md) — route shape, success/error envelopes, auth flow, DTO conventions, Swagger decorators.
+- [docs/conventions.md](./docs/conventions.md) — file & code organization: where constants, types, interfaces, enums, and reusable helpers must live (never inline in logic files).
 - [docs/plans/](./docs/plans/) — investigation notes and the deferred-work roadmap.
 
 Each doc ends with a **Known Gaps** section — read it before treating that area as a pattern to copy.
 
 ## Code Style
 
-Prettier enforces single quotes and trailing commas. TypeScript strict mode is on (`strictNullChecks`). Module resolution is `nodenext`. There is **no `@/` path alias** — imports use `src/...` absolute specifiers, resolved via `baseUrl` in `tsconfig.json`.
+Prettier enforces single quotes and trailing commas. TypeScript strict mode is on (`strictNullChecks`; `strict` itself is off — see [docs/decisions/0003-typescript-6-upgrade.md](./docs/decisions/0003-typescript-6-upgrade.md)). Module resolution is `nodenext`. There is **no `@/` path alias** — imports use `src/...` absolute specifiers, resolved via `paths` in `tsconfig.json`.
 
 ## Change Documentation
 

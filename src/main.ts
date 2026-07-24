@@ -9,7 +9,6 @@ import {
   VersioningType,
 } from '@nestjs/common';
 
-
 process.on('uncaughtException', (error: Error) => {
   void handleFatalError('Uncaught Exception', error.stack);
 });

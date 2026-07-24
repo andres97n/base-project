@@ -39,7 +39,7 @@ export class SeedService {
         password,
         fullName,
         roles: [UserRoles.ADMIN],
-      } as Partial<User>);
+      });
 
       this.logger.log(`Admin user ${email} created successfully.`);
     }

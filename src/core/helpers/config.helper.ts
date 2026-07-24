@@ -1,5 +1,4 @@
-import { INestApplication, Logger } from "@nestjs/common";
-
+import { INestApplication, Logger } from '@nestjs/common';
 
 let app: INestApplication | undefined;
 const processLogger = new Logger('Process');

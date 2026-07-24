@@ -33,7 +33,7 @@ function buildAxiosError(status?: number, data?: unknown): AxiosError {
       statusText: '',
       data,
       headers: {},
-      config: config as AxiosError['config'],
+      config: config as NonNullable<AxiosError['config']>,
     };
   }
 
