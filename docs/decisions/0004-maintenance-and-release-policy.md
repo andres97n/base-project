@@ -30,9 +30,11 @@ Adopt the policy, translated to pnpm and wired into the existing docs culture.
   `pnpm audit --prod`) and a separate e2e job with a `mongo:7` service container.
 - **Automation:** `renovate.json` — grouped `@nestjs/*` and TS-tooling PRs, dependency
   dashboard, dev-patch auto-merge, manual review for majors/runtime/security.
-- **Docs:** `DEPENDENCY-POLICY.md`, `UPGRADE.md`, `SUPPORT.md`, `SECURITY.md`, and a thin root
-  `ARCHITECTURE.md` mapping the policy's `domain/application/infrastructure/presentation` layers
-  onto the actual `common/core/modules` structure. Seeded `CHANGELOG.md` at 1.0.0.
+- **Docs:** `docs/dependency-policy.md`, `docs/upgrade.md`, `docs/support.md`, root
+  `SECURITY.md`, and `docs/architecture-mapping.md` mapping the policy's
+  `domain/application/infrastructure/presentation` layers onto the actual `common/core/modules`
+  structure. Seeded root `CHANGELOG.md` at 1.0.0. (Originally landed at repo root; relocated
+  into `docs/` shortly after — see Addendum below.)
 - **Architecture:** documented the layer mapping; **no physical restructure**.
 
 ## Alternatives considered
@@ -53,7 +55,7 @@ Adopt the policy, translated to pnpm and wired into the existing docs culture.
 - Renovate opens grouped, reviewable dependency PRs and tracks a deprecation/upgrade backlog.
 - Forks can record and reason about their boilerplate origin version.
 - Releases are reproducible: bump version → gate green → `git tag vX.Y.Z` → GitHub release from
-  the changelog (see UPGRADE.md).
+  the changelog (see docs/upgrade.md).
 
 ## Remaining gaps (deliberately out of scope)
 

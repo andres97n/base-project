@@ -208,10 +208,10 @@ Each doc under `docs/` ends with a **Known Gaps** section listing verified defec
 | [docs/database.md](./docs/database.md) | Driver selection, repository API, pagination, soft delete, transactions, schema conventions |
 | [docs/api.md](./docs/api.md) | Route shape, response envelopes, auth flow, DTO and Swagger conventions |
 | [docs/plans/](./docs/plans/) | Accumulated investigation notes and the deferred-work roadmap |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Entry point + clean-architecture layer mapping onto `common/core/modules` |
-| [DEPENDENCY-POLICY.md](./DEPENDENCY-POLICY.md) | Dependency, deprecation, and SemVer policy (pnpm) |
-| [UPGRADE.md](./UPGRADE.md) | Dependency/framework upgrade process and fork-adoption guide |
-| [SUPPORT.md](./SUPPORT.md) | Supported versions, release model, fork versioning |
+| [docs/architecture-mapping.md](./docs/architecture-mapping.md) | Entry point + clean-architecture layer mapping onto `common/core/modules` |
+| [docs/dependency-policy.md](./docs/dependency-policy.md) | Dependency, deprecation, and SemVer policy (pnpm) |
+| [docs/upgrade.md](./docs/upgrade.md) | Dependency/framework upgrade process and fork-adoption guide |
+| [docs/support.md](./docs/support.md) | Supported versions, release model, fork versioning |
 | [SECURITY.md](./SECURITY.md) | Vulnerability reporting and audit triage |
 | [CHANGELOG.md](./CHANGELOG.md) | Release history (Keep a Changelog + SemVer) |
 

@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-See [SUPPORT.md](./SUPPORT.md). The latest major receives security fixes; the previous major
+See [docs/support.md](./docs/support.md). The latest major receives security fixes; the previous major
 receives critical security fixes for 6 months after a new major is released.
 
 ## Reporting a vulnerability
@@ -14,7 +14,7 @@ within a few business days.
 ## Triage & response
 
 - Runtime dependency vulnerabilities are triaged with `pnpm audit --prod` and fixed urgently,
-  released as a patch version (see [DEPENDENCY-POLICY.md](./DEPENDENCY-POLICY.md)).
+  released as a patch version (see [docs/dependency-policy.md](./docs/dependency-policy.md)).
 - CI runs `pnpm audit --prod` as a report-only step on every PR; Renovate raises security PRs
   via `vulnerabilityAlerts`.
 - `pnpm audit --fix` is never run blindly, and never used to force a breaking major.

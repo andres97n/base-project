@@ -13,7 +13,7 @@ changes are isolated, validated in CI, semver-tagged, and communicated through r
 - Keep the NestJS ecosystem aligned: update `@nestjs/*` packages as one compatible group, never
   a single `@nestjs/*` package in isolation.
 - Before any NestJS **major** upgrade, read the official migration guide and use a dedicated
-  branch (see [UPGRADE.md](./UPGRADE.md)).
+  branch (see [upgrade.md](./upgrade.md)).
 - Never run `pnpm audit --fix` blindly, and never force through a fix that changes a major.
 - Do not add `overrides`/patches without first investigating the dependency chain.
 
@@ -54,7 +54,7 @@ first — except for urgent security fixes.
 
 ## Automated updates (Renovate)
 
-Configured in [`renovate.json`](./renovate.json):
+Configured in [`renovate.json`](../renovate.json):
 
 - PRs for all updates; `@nestjs/*` grouped in one PR; TS tooling (`typescript`, `ts-node`,
   `ts-jest`, `ts-loader`, `tsconfig-paths`, `@types/node`, `typescript-eslint`) grouped together.
@@ -65,7 +65,7 @@ Configured in [`renovate.json`](./renovate.json):
 
 ## CI quality gate
 
-Every dependency update and PR must pass the gate in [`.github/workflows/ci.yml`](./.github/workflows/ci.yml):
+Every dependency update and PR must pass the gate in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml):
 
 ```bash
 pnpm install --frozen-lockfile

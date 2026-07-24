@@ -1,7 +1,7 @@
 # Upgrade Guide
 
 How to upgrade dependencies **in the boilerplate**, and how a **fork** should adopt boilerplate
-releases. See also [DEPENDENCY-POLICY.md](./DEPENDENCY-POLICY.md) and [SUPPORT.md](./SUPPORT.md).
+releases. See also [dependency-policy.md](./dependency-policy.md) and [support.md](./support.md).
 
 > Package manager: **pnpm**.
 

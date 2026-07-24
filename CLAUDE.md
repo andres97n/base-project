@@ -79,7 +79,7 @@ Full detail: [docs/architecture.md](./docs/architecture.md), [docs/database.md](
 - [docs/api.md](./docs/api.md) — route shape, success/error envelopes, auth flow, DTO conventions, Swagger decorators.
 - [docs/conventions.md](./docs/conventions.md) — file & code organization: where constants, types, interfaces, enums, and reusable helpers must live (never inline in logic files).
 - [docs/plans/](./docs/plans/) — investigation notes and the deferred-work roadmap.
-- [DEPENDENCY-POLICY.md](./DEPENDENCY-POLICY.md), [UPGRADE.md](./UPGRADE.md), [SUPPORT.md](./SUPPORT.md), [SECURITY.md](./SECURITY.md), [CHANGELOG.md](./CHANGELOG.md) — maintenance, release, and dependency governance (pnpm; see [docs/decisions/0004-maintenance-and-release-policy.md](./docs/decisions/0004-maintenance-and-release-policy.md)).
+- [docs/dependency-policy.md](./docs/dependency-policy.md), [docs/upgrade.md](./docs/upgrade.md), [docs/support.md](./docs/support.md), [SECURITY.md](./SECURITY.md), [CHANGELOG.md](./CHANGELOG.md) — maintenance, release, and dependency governance (pnpm; see [docs/decisions/0004-maintenance-and-release-policy.md](./docs/decisions/0004-maintenance-and-release-policy.md)).
 
 Each doc ends with a **Known Gaps** section — read it before treating that area as a pattern to copy.
 

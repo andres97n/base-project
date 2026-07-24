@@ -1,14 +1,15 @@
 # Architecture
 
-This is a thin entry point. The full, authoritative reference lives in `docs/`:
+This is a thin entry point. The full, authoritative reference lives alongside this file in
+`docs/`:
 
-- [docs/architecture.md](./docs/architecture.md) — bootstrap sequence, global modules, env var
+- [architecture.md](./architecture.md) — bootstrap sequence, global modules, env var
   table, exception/filter/interceptor wiring, CLS audit, logging, rate limiting, testing.
-- [docs/database.md](./docs/database.md) — driver selection, base repositories, pagination,
+- [database.md](./database.md) — driver selection, base repositories, pagination,
   soft delete, transactions, schema conventions.
-- [docs/api.md](./docs/api.md) — route shape, response envelopes, auth flow, DTO conventions.
-- [docs/conventions.md](./docs/conventions.md) — where constants/types/enums/helpers must live.
-- [docs/decisions/](./docs/decisions/) — ADRs (settled decisions in effect).
+- [api.md](./api.md) — route shape, response envelopes, auth flow, DTO conventions.
+- [conventions.md](./conventions.md) — where constants/types/enums/helpers must live.
+- [decisions/](./decisions/) — ADRs (settled decisions in effect).
 
 ## Layer mapping
 
@@ -35,4 +36,4 @@ throttler, swagger) live in `core/`.
 `common/` never imports from `modules/`. Feature modules depend on `common/` and `core/`, never
 the reverse. Every repository extends `BaseRepository<T>` / `BasePostgresRepository<T>`; every
 schema/entity extends `BaseSchema` / `BasePostgresEntity`; every thrown error extends
-`AppException`. See [CLAUDE.md](./CLAUDE.md) for the full rule set.
+`AppException`. See [CLAUDE.md](../CLAUDE.md) for the full rule set.
